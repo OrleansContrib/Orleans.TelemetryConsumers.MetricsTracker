@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricsTracker.TestHost", "Orleans.TelemetryConsumers.MetricsTracker.TestHost\MetricsTracker.TestHost.csproj", "{E6A446E4-CA56-4F41-8C43-0EF89D9D2310}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricsTracker.TestHost", "MetricsTracker.TestHost\MetricsTracker.TestHost.csproj", "{E6A446E4-CA56-4F41-8C43-0EF89D9D2310}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.TelemetryConsumers.MetricsTracker", "Orleans.TelemetryConsumers.MetricsTracker\Orleans.TelemetryConsumers.MetricsTracker.csproj", "{A3CC413E-E076-4F69-8D8A-93A4DEE16566}"
 EndProject
