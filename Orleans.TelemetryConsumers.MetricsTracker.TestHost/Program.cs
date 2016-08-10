@@ -1,16 +1,15 @@
 using System;
 using System.Threading.Tasks;
-
+using System.Threading;
 using Orleans;
 using Orleans.Runtime.Configuration;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 {
-    /// <summary>
-    /// Orleans test silo host
-    /// </summary>
     public class Program
     {
+        //public static SyncContext = SynchronizationContext.Current;
+
         static void Main(string[] args)
         {
             // The Orleans silo environment is initialized in its own app domain in order to more
@@ -40,9 +39,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             hostWrapper = new OrleansHostWrapper(args);
 
             if (!hostWrapper.Run())
-            {
                 Console.Error.WriteLine("Failed to initialize Orleans silo");
-            }
         }
 
         static void ShutdownSilo()

@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
+using System.Reflection;
+using System.IO;
+using Orleans.TelemetryConsumers.MetricsTracker;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 {
@@ -23,6 +26,17 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             Init();
         }
 
+        static string AssemblyDirectory
+        {
+            get
+            {
+                var codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                var uri = new UriBuilder(codeBase);
+                var path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
         public bool Run()
         {
             bool ok = false;
@@ -31,16 +45,18 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             {
                 siloHost.InitializeOrleansSilo();
 
+                siloHost.Config.Globals
+                    .RegisterBootstrapProvider<OrleansDashboard.Dashboard>("OrleansDashboard");
+
+                siloHost.Config.Globals
+                    .RegisterBootstrapProvider<MetricsTrackerBootstrapProvider>("MetricsTracker");
+
                 ok = siloHost.StartOrleansSilo();
 
                 if (ok)
-                {
                     Console.WriteLine(string.Format("Successfully started Orleans silo '{0}' as a {1} node.", siloHost.Name, siloHost.Type));
-                }
                 else
-                {
                     throw new SystemException(string.Format("Failed to start Orleans silo '{0}' as a {1} node.", siloHost.Name, siloHost.Type));
-                }
             }
             catch (Exception exc)
             {
