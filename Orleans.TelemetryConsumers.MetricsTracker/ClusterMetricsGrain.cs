@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Orleans;
@@ -16,7 +17,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         #region Streams
 
-        // TODO: use these
+        // TODO: use these streams
 
         IAsyncStream<MetricsSnapshot> SnapshotStream;
 
@@ -34,9 +35,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 logger = GetLogger("ClusterMetricsGrain");
 
                 SiloSnapshots = new Dictionary<string, MetricsSnapshot>();
-                ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values);
-
-                logger.IncrementMetric("SampleMetric");
+                ClusterSnapshot = new MetricsSnapshot { Source = nameof(ClusterMetricsGrain) };
 
                 return base.OnActivateAsync();
             }
@@ -49,6 +48,20 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
+        void LogMetricsSnapshot(MetricsSnapshot snapshot)
+        {
+            logger.TrackTrace($"MetricsSnapshot from {snapshot.Source} (SiloCount = {snapshot.SiloCount})");
+
+            foreach (var counter in snapshot.Counters)
+                logger.TrackTrace($"[Counter] {counter.Key} = {counter.Value}");
+
+            foreach (var metric in snapshot.Metrics)
+                logger.TrackTrace($"[Metric] {metric.Key} = {metric.Value}");
+
+            foreach (var metric in snapshot.TimeSpanMetrics)
+                logger.TrackTrace($"[TimeSpan Metric] {metric.Key} = {metric.Value}");
+        }
+
         public Task ReportSiloStatistics(MetricsSnapshot snapshot)
         {
             try
@@ -59,10 +72,21 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 else
                     SiloSnapshots[snapshot.Source] = snapshot;
 
+                // recalculate cluster metrics snapshot
+                // any time a silo snapshot is added or updated
+                ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values.ToList());
+
+
+
+                // for debugging purposes
+                logger.TrackTrace("---NEW METRICS SNAPSHOT---");
+                LogMetricsSnapshot(snapshot);
+                logger.TrackTrace("---NEW CLUSTER SNAPSHOT---");
+                LogMetricsSnapshot(ClusterSnapshot);
+
+
+
                 logger.IncrementMetric("SiloStatisticsReported");
-                logger.TrackEvent("SiloStatisticsReported");
-                logger.Verbose("SiloStatisticsReported");
-                logger.Info("SiloStatisticsReported");
                 logger.TrackTrace("SiloStatisticsReported");
 
                 return TaskDone.Done;
@@ -74,7 +98,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
-        MetricsSnapshot CalculateClusterMetrics(IEnumerable<MetricsSnapshot> siloSnapshots)
+        MetricsSnapshot CalculateClusterMetrics(IList<MetricsSnapshot> siloSnapshots)
         {
             try
             {
@@ -106,6 +130,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                             result.TimeSpanMetrics[siloMetric.Key] += siloMetric.Value;
                     }
                 }
+
+                result.SiloCount = siloSnapshots.Count;
 
                 return result;
             }

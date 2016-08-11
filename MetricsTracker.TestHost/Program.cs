@@ -30,9 +30,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             //       This is the place your custom logic, for example calling client logic
             //       or initializing an HTTP front end for accepting incoming requests.
 
-            var metricsGrain = GrainClient.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
-            metricsGrain.ReportSiloStatistics(new MetricsSnapshot()).Wait();
-
             Console.WriteLine("Orleans Silo is running.\nPress Enter to terminate...");
             Console.ReadLine();
 

@@ -10,6 +10,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
     {
         public DateTime SnapshotTime;
         public string Source;
+        public int SiloCount = 1;
 
         public Dictionary<string, long> Counters;
         public Dictionary<string, double> Metrics;
