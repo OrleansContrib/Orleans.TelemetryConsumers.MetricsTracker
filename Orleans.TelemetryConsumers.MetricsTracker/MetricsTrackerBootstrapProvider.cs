@@ -18,6 +18,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         Logger logger;
 
+
         public Task Close()
         {
             return TaskDone.Done;

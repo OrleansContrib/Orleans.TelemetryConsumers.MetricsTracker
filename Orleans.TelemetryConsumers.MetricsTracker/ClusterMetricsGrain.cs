@@ -36,6 +36,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 SiloSnapshots = new Dictionary<string, MetricsSnapshot>();
                 ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values);
 
+                logger.IncrementMetric("SampleMetric");
+
                 return base.OnActivateAsync();
             }
             catch (Exception ex)
@@ -58,6 +60,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                     SiloSnapshots[snapshot.Source] = snapshot;
 
                 logger.IncrementMetric("SiloStatisticsReported");
+                logger.TrackEvent("SiloStatisticsReported");
+                logger.Verbose("SiloStatisticsReported");
+                logger.Info("SiloStatisticsReported");
+                logger.TrackTrace("SiloStatisticsReported");
 
                 return TaskDone.Done;
             }

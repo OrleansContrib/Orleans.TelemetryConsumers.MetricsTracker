@@ -18,6 +18,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         public MetricsSnapshot()
         {
             SnapshotTime = DateTime.UtcNow;
+            Source = "Internal";
 
             Counters = new Dictionary<string, long>();
             Metrics = new Dictionary<string, double>();

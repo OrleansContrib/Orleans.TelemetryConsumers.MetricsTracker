@@ -7,6 +7,7 @@ using Orleans.Runtime.Host;
 using System.Reflection;
 using System.IO;
 using Orleans.TelemetryConsumers.MetricsTracker;
+using System.Collections.Generic;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 {
@@ -45,8 +46,11 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             {
                 siloHost.InitializeOrleansSilo();
 
+                
+
                 siloHost.Config.Globals
                     .RegisterBootstrapProvider<OrleansDashboard.Dashboard>("OrleansDashboard");
+
 
                 siloHost.Config.Globals
                     .RegisterBootstrapProvider<MetricsTrackerBootstrapProvider>("MetricsTracker");

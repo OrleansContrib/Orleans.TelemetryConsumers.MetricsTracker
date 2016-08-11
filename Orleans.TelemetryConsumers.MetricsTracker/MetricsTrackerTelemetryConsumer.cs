@@ -19,11 +19,11 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         IProviderRuntime Runtime;
 
-        SynchronizationContext SyncContext;
+        public static SynchronizationContext SyncContext;
 
         // TODO: provide configuration settings for these
         int HistoryLength = 30;
-        TimeSpan MeasurementInterval = TimeSpan.FromSeconds(6);
+        TimeSpan MeasurementInterval = TimeSpan.FromSeconds(1);
 
         object CountersLock = new object();
         ConcurrentDictionary<string, long> Counters;
@@ -41,8 +41,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         ConcurrentDictionary<string, MeasuredRequest> Requests;
         ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>> RequestHistory;
 
-        Timer SamplingTimer;
-        //System.Timers.Timer SamplingTimer;
+        //Timer SamplingTimer;
+        System.Timers.Timer SamplingTimer;
 
         public MetricsTrackerTelemetryConsumer(IProviderRuntime runtime)
         {
@@ -51,9 +51,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 Runtime = runtime;
 
                 logger = Runtime.GetLogger(nameof(MetricsTrackerTelemetryConsumer));
-
-                // TODO: set SyncContext
-                //SyncContext = SynchronizationContext.Current;
 
                 Counters = new ConcurrentDictionary<string, long>();
                 CounterHistory = new ConcurrentDictionary<string, ConcurrentQueue<long>>();
@@ -67,15 +64,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 Requests = new ConcurrentDictionary<string, MeasuredRequest>();
                 RequestHistory = new ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>>();
 
-                SamplingTimer = new Timer(new TimerCallback(TimedSampler), null, 1000,
-                    (int)MeasurementInterval.TotalMilliseconds);
-
-                //var context = SynchronizationContext.Current;
-
-                //SamplingTimer = new System.Timers.Timer(MeasurementInterval.TotalMilliseconds);
-                ////SamplingTimer.SynchronizingObject = context;
-
-
+                // start a message pump to give ourselves the right synchronization context
+                // from which we can communicate with grains via normal grain references
+                StartMessagePump().Ignore();
             }
             catch (Exception ex)
             {
@@ -84,18 +75,21 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
-        void TimedSampler(object state)
+        async Task StartMessagePump()
         {
-            //Task.Factory.StartNew(SampleMetrics, CancellationToken.None, 
-            //    TaskCreationOptions.None, TaskScheduler.Default);
+            while (true)
+            {
+                try
+                {
+                    // this only works when called as a separate task, not a direct call
+                    await SampleMetrics();
 
-            try
-            {
-                var task = SampleMetrics();
-            }
-            catch (Exception ex)
-            {
-                logger.TrackException(ex);
+                    await Task.Delay((int)MeasurementInterval.TotalMilliseconds);
+                }
+                catch (Exception ex)
+                {
+                    logger.TrackException(ex);
+                }
             }
         }
 
@@ -142,8 +136,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 TrimHistories();
 
                 // TODO: fix to make this work
-                //var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
-                //await metricsGrain.ReportSiloStatistics(snapshot);
+                var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
+                await metricsGrain.ReportSiloStatistics(snapshot);
             }
             catch (Exception ex)
             {
@@ -230,20 +224,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 throw;
             }
         }
-
-        //string GetStreamName(MetricType type, string metric)
-        //{
-        //    var typeName =
-        //        type == MetricType.Counter ? "Counter"
-        //        : type == MetricType.Metric ? "Metric"
-        //        : type == MetricType.TimeSpanMetric ? "TimeSpanMetric"
-        //        : null;
-
-        //    if (typeName == null)
-        //        throw new ArgumentException("Unknown MetricType");
-
-        //    return $"{typeName}-{metric}";
-        //}
 
         void AddCounter(string name)
         {
@@ -364,6 +344,11 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 }
 
                 TrimMetricsHistory(name);
+
+                //var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
+                //metricsGrain.ReportSiloStatistics(new MetricsSnapshot()).Wait();
+
+                //StartMessagePump();
             }
             catch (Exception ex)
             {
@@ -371,6 +356,21 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 //throw;
             }
         }
+
+        
+
+        //async Task Experiment()
+        //{
+        //    try
+        //    {
+        //        var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
+        //        await metricsGrain.ReportSiloStatistics(new MetricsSnapshot());
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.TrackException(ex);
+        //    }
+        //}
 
         public void TrackDependency(string dependencyName, string commandName, DateTimeOffset startTime, TimeSpan duration, bool success)
         {
