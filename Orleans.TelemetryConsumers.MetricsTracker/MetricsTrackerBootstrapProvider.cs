@@ -18,12 +18,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         Logger logger;
 
-
-        public Task Close()
-        {
-            return TaskDone.Done;
-        }
-
         public Task Init(string name, IProviderRuntime providerRuntime, IProviderConfiguration config)
         {
             Runtime = providerRuntime;
@@ -34,6 +28,21 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             var telemetryConsumer = new MetricsTrackerTelemetryConsumer(providerRuntime);
             LogManager.TelemetryConsumers.Add(telemetryConsumer);
 
+            Runtime.SetInvokeInterceptor(async (method, request, grain, invoker) =>
+            {
+                logger.Verbose($"{grain.GetType().Name}.{method.Name}(...) called");
+
+                // Invoke the request and return the result back to the caller.
+                var result = await invoker.Invoke(grain, request);
+                logger.Verbose($"Grain method returned {result}");
+                return result;
+            });
+
+            return TaskDone.Done;
+        }
+
+        public Task Close()
+        {
             return TaskDone.Done;
         }
     }

@@ -12,6 +12,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
     {
         Logger logger;
 
+        ObserverSubscriptionManager<IClusterMetricsGrainObserver> Subscribers;
+
         MetricsSnapshot ClusterSnapshot;
         Dictionary<string, MetricsSnapshot> SiloSnapshots;
 
@@ -34,6 +36,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             {
                 logger = GetLogger("ClusterMetricsGrain");
 
+                Subscribers = new ObserverSubscriptionManager<IClusterMetricsGrainObserver>();
+
                 SiloSnapshots = new Dictionary<string, MetricsSnapshot>();
                 ClusterSnapshot = new MetricsSnapshot { Source = nameof(ClusterMetricsGrain) };
 
@@ -48,18 +52,58 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
+        public Task Start()
+        {
+            Subscribers.Notify(o => o.EnableClusterMetrics());
+            return TaskDone.Done;
+        }
+
+        // it's not expected that anyone would want to call Stop, but it seems odd to leave it out
+        public Task Stop()
+        {
+            Subscribers.Notify(o => o.DisableClusterMetrics());
+            return TaskDone.Done;
+        }
+
+        // used by a custom MetricsTrackerTelemetryConsumer on each silo
+        // to make themselves aware of when they should or shouldn't push their metrics here
+        public Task Subscribe(IClusterMetricsGrainObserver observer)
+        {
+            try
+            {
+                // don't subscribe twice
+                if (!Subscribers.IsSubscribed(observer))
+                    Subscribers.Subscribe(observer);
+
+                return TaskDone.Done;
+            }
+            catch (Exception ex)
+            {
+                logger.TrackException(ex);
+                throw;
+            }
+        }
+
         void LogMetricsSnapshot(MetricsSnapshot snapshot)
         {
-            logger.TrackTrace($"MetricsSnapshot from {snapshot.Source} (SiloCount = {snapshot.SiloCount})");
+            try
+            {
+                logger.TrackTrace($"MetricsSnapshot from {snapshot.Source} (SiloCount = {snapshot.SiloCount})");
 
-            foreach (var counter in snapshot.Counters)
-                logger.TrackTrace($"[Counter] {counter.Key} = {counter.Value}");
+                foreach (var counter in snapshot.Counters)
+                    logger.TrackTrace($"[Counter] {counter.Key} = {counter.Value}");
 
-            foreach (var metric in snapshot.Metrics)
-                logger.TrackTrace($"[Metric] {metric.Key} = {metric.Value}");
+                foreach (var metric in snapshot.Metrics)
+                    logger.TrackTrace($"[Metric] {metric.Key} = {metric.Value}");
 
-            foreach (var metric in snapshot.TimeSpanMetrics)
-                logger.TrackTrace($"[TimeSpan Metric] {metric.Key} = {metric.Value}");
+                foreach (var metric in snapshot.TimeSpanMetrics)
+                    logger.TrackTrace($"[TimeSpan Metric] {metric.Key} = {metric.Value}");
+            }
+            catch (Exception ex)
+            {
+                logger.TrackException(ex);
+                throw;
+            }
         }
 
         public Task ReportSiloStatistics(MetricsSnapshot snapshot)
@@ -79,9 +123,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
 
                 // for debugging purposes
-                logger.TrackTrace("---NEW METRICS SNAPSHOT---");
+                logger.TrackTrace("---NEW SILO METRICS SNAPSHOT---");
                 LogMetricsSnapshot(snapshot);
-                logger.TrackTrace("---NEW CLUSTER SNAPSHOT---");
+                logger.TrackTrace("---NEW CLUSTER METRICS SNAPSHOT---");
                 LogMetricsSnapshot(ClusterSnapshot);
 
 

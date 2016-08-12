@@ -19,8 +19,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         IProviderRuntime Runtime;
 
-        public static SynchronizationContext SyncContext;
-
         // TODO: provide configuration settings for these
         int HistoryLength = 30;
         TimeSpan MeasurementInterval = TimeSpan.FromSeconds(1);
@@ -40,9 +38,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         object RequestsLock = new object();
         ConcurrentDictionary<string, MeasuredRequest> Requests;
         ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>> RequestHistory;
-
-        //Timer SamplingTimer;
-        System.Timers.Timer SamplingTimer;
 
         public MetricsTrackerTelemetryConsumer(IProviderRuntime runtime)
         {
@@ -64,9 +59,26 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 Requests = new ConcurrentDictionary<string, MeasuredRequest>();
                 RequestHistory = new ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>>();
 
+                InitializeClusterMetrics().Ignore();
+
                 // start a message pump to give ourselves the right synchronization context
                 // from which we can communicate with grains via normal grain references
+                // TODO: don't start the pump until it's been requested
                 StartMessagePump().Ignore();
+            }
+            catch (Exception ex)
+            {
+                logger.TrackException(ex);
+                throw;
+            }
+        }
+
+        async Task InitializeClusterMetrics()
+        {
+            try
+            {
+                var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
+                //var metrics = await metricsGrain.Subscribe(null);
             }
             catch (Exception ex)
             {
@@ -135,7 +147,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 TrimHistories();
 
-                // TODO: fix to make this work
+                // report silo statistics to cluster metrics grain
                 var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
                 await metricsGrain.ReportSiloStatistics(snapshot);
             }
@@ -536,19 +548,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         public void Flush() { }
 
-        public void Close()
-        {
-            try
-            {
-                if (SamplingTimer != null)
-                    SamplingTimer.Dispose();
-            }
-            catch (Exception ex)
-            {
-                logger.TrackException(ex);
-
-                // don't rethrow on timer dispose error
-            }
-        }
+        public void Close() { }
     }
 }

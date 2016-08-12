@@ -24,6 +24,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             });
 
             var config = ClientConfiguration.LocalhostSilo();
+            config.DefaultTraceLevel = Runtime.Severity.Verbose;
             GrainClient.Initialize(config);
 
             // TODO: once the previous call returns, the silo is up and running.
@@ -38,15 +39,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 
         static void InitSilo(string[] args)
         {
-            var SyncContext = SynchronizationContext.Current;
-            if (SyncContext == null)
-            {
-                SyncContext = new SynchronizationContext();
-                SynchronizationContext.SetSynchronizationContext(SyncContext);
-            }
-
-            MetricsTrackerTelemetryConsumer.SyncContext = SyncContext;
-
             hostWrapper = new OrleansHostWrapper(args);
 
             if (!hostWrapper.Run())

@@ -64,7 +64,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClusterMetricsGrain.cs" />
+    <Compile Include="ClusterMetricsGrainObserver.cs" />
     <Compile Include="IClusterMetricsGrain.cs" />
+    <Compile Include="IClusterMetricsGrainObserver.cs" />
     <Compile Include="MeasuredRequest.cs" />
     <Compile Include="MetricsSnapshot.cs" />
     <Compile Include="MetricsTrackerBootstrapProvider.cs" />
