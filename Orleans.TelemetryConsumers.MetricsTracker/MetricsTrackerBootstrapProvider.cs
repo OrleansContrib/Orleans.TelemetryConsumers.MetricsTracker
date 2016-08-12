@@ -36,10 +36,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 try
                 {
                     // Invoke the request and return the result back to the caller.
-                    var result = await invoker.Invoke(grain, request) ?? "null";
+                    var result = await invoker.Invoke(grain, request);
 
                     //if (logger.IsVerbose)
-                    logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}.{method.Name}");
+                        logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}.{method.Name}");
 
                     return result;
                 }
