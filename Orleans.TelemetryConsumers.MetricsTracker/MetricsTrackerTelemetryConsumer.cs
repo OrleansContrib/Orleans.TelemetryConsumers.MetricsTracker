@@ -23,6 +23,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         int HistoryLength = 30;
         TimeSpan MeasurementInterval = TimeSpan.FromSeconds(1);
 
+        object ExceptionsLock = new object();
+
         object CountersLock = new object();
         ConcurrentDictionary<string, long> Counters;
         ConcurrentDictionary<string, ConcurrentQueue<long>> CounterHistory;
@@ -38,6 +40,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         object RequestsLock = new object();
         ConcurrentDictionary<string, MeasuredRequest> Requests;
         ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>> RequestHistory;
+
 
         public MetricsTrackerTelemetryConsumer(IProviderRuntime runtime)
         {
@@ -73,6 +76,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
+        // TODO: figure out how to subscribe with a GrainObserver, or some other method
+        // so that the server can push messages here
         async Task InitializeClusterMetrics()
         {
             try
@@ -416,18 +421,34 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             //}
         }
 
-        public void TrackException(Exception exception, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
+        public void TrackException(Exception exception, 
+            IDictionary<string, string> properties = null, 
+            IDictionary<string, double> metrics = null)
         {
-            //try
-            //{
-            //    AddMetric(metrics);
-            //    //NRClient.NoticeError(exception, properties);
-            //}
-            //catch (Exception ex)
-            //{
-            //    logger.TrackException(ex);
-            //    throw;
-            //}
+            try
+            {
+                var exceptionName = exception.GetType().Name;
+                var metricName = $"Exception:{exceptionName}";
+
+                lock (ExceptionsLock)
+                {
+                    if (!Metrics.ContainsKey(metricName))
+                    {
+                        AddMetric(metricName);
+                        logger.IncrementMetric("UniqueExceptionsReported");
+                    }
+                }
+
+                logger.IncrementMetric($"Exception:{exceptionName}");
+                logger.IncrementMetric("ExceptionsReported");
+
+                //NRClient.NoticeError(exception, properties);
+            }
+            catch (Exception ex)
+            {
+                logger.TrackException(ex);
+                throw;
+            }
         }
 
         public void TrackMetric(string name, TimeSpan value, IDictionary<string, string> properties = null)

@@ -45,6 +45,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 }
                 catch (Exception ex)
                 {
+                    // log all uncaught exceptions from grain method invocations
                     logger.TrackException(ex);
                     throw;
                 }
