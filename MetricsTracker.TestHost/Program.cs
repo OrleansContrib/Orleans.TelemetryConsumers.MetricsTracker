@@ -4,6 +4,7 @@ using System.Threading;
 using Orleans;
 using Orleans.Runtime.Configuration;
 using Orleans.TelemetryConsumers.MetricsTracker;
+using MetricsTracker.TestHost.TestDomain;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 {
@@ -43,6 +44,11 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
                 TrackMethodGrainCalls = true,
                 HistoryLength = 30 // default
             }).Ignore();
+
+            // TODO: put together a better demo
+            // start our silly demo simulation
+            var sim = GrainClient.GrainFactory.GetGrain<ISimulatorGrain>(Guid.Empty);
+            sim.StartSimulation(TimeSpan.FromMinutes(10), 200, 200, true).Ignore();
 
             Console.WriteLine("Orleans Silo is running.\nPress Enter to terminate...");
             Console.ReadLine();
