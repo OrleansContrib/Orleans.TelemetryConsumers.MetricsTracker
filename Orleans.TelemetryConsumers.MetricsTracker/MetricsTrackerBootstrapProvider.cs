@@ -28,14 +28,26 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             var telemetryConsumer = new MetricsTrackerTelemetryConsumer(providerRuntime);
             LogManager.TelemetryConsumers.Add(telemetryConsumer);
 
+            // TODO: harden this for production use
+            // TODO: add tracking of the time each grain method call took to complete
+            // TODO: make this optional, enabled or disabled via ClusterMetricsGrain calls
             Runtime.SetInvokeInterceptor(async (method, request, grain, invoker) =>
             {
-                logger.Verbose($"{grain.GetType().Name}.{method.Name}(...) called");
+                try
+                {
+                    // Invoke the request and return the result back to the caller.
+                    var result = await invoker.Invoke(grain, request) ?? "null";
 
-                // Invoke the request and return the result back to the caller.
-                var result = await invoker.Invoke(grain, request);
-                logger.Verbose($"Grain method returned {result}");
-                return result;
+                    //if (logger.IsVerbose)
+                    logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}.{method.Name}");
+
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    logger.TrackException(ex);
+                    throw;
+                }
             });
 
             return TaskDone.Done;
