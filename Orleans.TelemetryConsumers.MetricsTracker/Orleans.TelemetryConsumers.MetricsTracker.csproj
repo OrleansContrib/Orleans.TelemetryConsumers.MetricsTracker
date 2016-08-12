@@ -68,6 +68,7 @@
     <Compile Include="IClusterMetricsGrain.cs" />
     <Compile Include="IClusterMetricsGrainObserver.cs" />
     <Compile Include="MeasuredRequest.cs" />
+    <Compile Include="MetricsConfiguration.cs" />
     <Compile Include="MetricsSnapshot.cs" />
     <Compile Include="MetricsTrackerBootstrapProvider.cs" />
     <Compile Include="MetricsTrackerTelemetryConsumer.cs" />

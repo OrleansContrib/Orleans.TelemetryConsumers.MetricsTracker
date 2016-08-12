@@ -19,11 +19,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         IProviderRuntime Runtime;
 
-        // TODO: provide configuration settings for these
-        int HistoryLength = 30;
-        TimeSpan MeasurementInterval = TimeSpan.FromSeconds(1);
-
-        object ExceptionsLock = new object();
+        MetricsConfiguration Configuration;
+        DateTime LastConfigCheck = DateTime.MinValue;
 
         object CountersLock = new object();
         ConcurrentDictionary<string, long> Counters;
@@ -41,7 +38,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         ConcurrentDictionary<string, MeasuredRequest> Requests;
         ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>> RequestHistory;
 
-
         public MetricsTrackerTelemetryConsumer(IProviderRuntime runtime)
         {
             try
@@ -49,6 +45,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 Runtime = runtime;
 
                 logger = Runtime.GetLogger(nameof(MetricsTrackerTelemetryConsumer));
+
+                Configuration = new MetricsConfiguration();
 
                 Counters = new ConcurrentDictionary<string, long>();
                 CounterHistory = new ConcurrentDictionary<string, ConcurrentQueue<long>>();
@@ -61,9 +59,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 Requests = new ConcurrentDictionary<string, MeasuredRequest>();
                 RequestHistory = new ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>>();
-
-                InitializeClusterMetrics().Ignore();
-
+                
                 // start a message pump to give ourselves the right synchronization context
                 // from which we can communicate with grains via normal grain references
                 // TODO: don't start the pump until it's been requested
@@ -76,14 +72,51 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
+        private void ConfigureSiloInterceptor(bool enable = true)
+        {
+            // TODO: harden this for production use
+            // TODO: add tracking of the time each grain method call took to complete
+            // TODO: make this optional, enabled or disabled via ClusterMetricsGrain calls
+            Runtime.SetInvokeInterceptor(async (method, request, grain, invoker) =>
+            {
+                try
+                {
+                    // Invoke the request and return the result back to the caller.
+                    var result = await invoker.Invoke(grain, request);
+
+                    if (Configuration.TrackMethodGrainCalls)
+                        logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}.{method.Name}");
+
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    if (Configuration.TrackExceptionCounters)
+                        logger.TrackException(ex);
+
+                    throw;
+                }
+            });
+        }
+
         // TODO: figure out how to subscribe with a GrainObserver, or some other method
-        // so that the server can push messages here
-        async Task InitializeClusterMetrics()
+        // so that the server can push messages to this telemetry consumer
+        async Task UpdateConfiguration()
         {
             try
             {
+                var oldConfig = Configuration;
+
                 var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
-                //var metrics = await metricsGrain.Subscribe(null);
+                Configuration = await metricsGrain.GetMetricsConfiguration();
+
+                if (Configuration.HistoryLength != oldConfig.HistoryLength)
+                    TrimHistories();
+
+                // TODO: figure out if this will interfere with other silo interceptors
+                ConfigureSiloInterceptor(enable: Configuration.NeedSiloInterceptor);
+
+                LastConfigCheck = DateTime.UtcNow;
             }
             catch (Exception ex)
             {
@@ -98,10 +131,14 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             {
                 try
                 {
-                    // this only works when called as a separate task, not a direct call
-                    await SampleMetrics();
+                    // do we need to update config?
+                    if (DateTime.UtcNow.Subtract(LastConfigCheck) > Configuration.ConfigurationInterval)
+                        await UpdateConfiguration();
 
-                    await Task.Delay((int)MeasurementInterval.TotalMilliseconds);
+                    if (Configuration.Enabled)
+                        await SampleMetrics();
+
+                    await Task.Delay((int)Configuration.SamplingInterval.TotalMilliseconds);
                 }
                 catch (Exception ex)
                 {
@@ -183,7 +220,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             try
             {
                 long counter;
-                while (CounterHistory[name].Count > HistoryLength)
+                while (CounterHistory[name].Count > Configuration.HistoryLength)
                     if (!CounterHistory[name].TryDequeue(out counter))
                         throw new ApplicationException("Couldn't dequeue oldest counter");
             }
@@ -199,7 +236,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             try
             {
                 double metric;
-                while (MetricHistory[name].Count > HistoryLength)
+                while (MetricHistory[name].Count > Configuration.HistoryLength)
                     if (!MetricHistory[name].TryDequeue(out metric))
                         throw new ApplicationException("Couldn't dequeue oldest double metric");
             }
@@ -215,7 +252,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             try
             {
                 TimeSpan metric;
-                while (TimeSpanMetricHistory[name].Count > HistoryLength)
+                while (TimeSpanMetricHistory[name].Count > Configuration.HistoryLength)
                     if (!TimeSpanMetricHistory[name].TryDequeue(out metric))
                         throw new ApplicationException("Couldn't dequeue oldest TimeSpan metric");
             }
@@ -231,7 +268,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             try
             {
                 MeasuredRequest request;
-                while (RequestHistory[name].Count > HistoryLength)
+                while (RequestHistory[name].Count > Configuration.HistoryLength)
                     if (!RequestHistory[name].TryDequeue(out request))
                         throw new ApplicationException("Couldn't dequeue oldest request");
             }
@@ -421,16 +458,20 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             //}
         }
 
+        // TODO: figure out what to do with properties and metrics
         public void TrackException(Exception exception, 
             IDictionary<string, string> properties = null, 
             IDictionary<string, double> metrics = null)
         {
             try
             {
+                if (!Configuration.TrackExceptionCounters)
+                    return;
+
                 var exceptionName = exception.GetType().Name;
                 var metricName = $"Exception:{exceptionName}";
 
-                lock (ExceptionsLock)
+                lock (MetricsLock)
                 {
                     if (!Metrics.ContainsKey(metricName))
                     {
@@ -442,11 +483,11 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 logger.IncrementMetric($"Exception:{exceptionName}");
                 logger.IncrementMetric("ExceptionsReported");
 
-                //NRClient.NoticeError(exception, properties);
             }
             catch (Exception ex)
             {
-                logger.TrackException(ex);
+                // TODO: figure out if this could cause an infinite loop
+                //logger.TrackException(ex);
                 throw;
             }
         }
@@ -534,10 +575,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                     metrics.AsParallel().ForAll(m =>
                     {
                         if (!Metrics.ContainsKey(m.Key))
-                        {
                             AddMetric(m.Key);
-                            //Metrics[m.Key].Add(m.Value);
-                        }
                     });
                 }
             }
@@ -569,6 +607,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         public void Flush() { }
 
-        public void Close() { }
+        public void Close()
+        {
+            // TODO: figure out if this should be done
+            //Runtime.SetInvokeInterceptor(null);
+        }
     }
 }

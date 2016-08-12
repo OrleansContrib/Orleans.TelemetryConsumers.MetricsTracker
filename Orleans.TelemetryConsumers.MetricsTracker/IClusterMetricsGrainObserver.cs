@@ -8,7 +8,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 {
     public interface IClusterMetricsGrainObserver : IGrainObserver
     {
-        void EnableClusterMetrics();
+        void EnableClusterMetrics(MetricsConfiguration config);
         void DisableClusterMetrics();
     }
 }

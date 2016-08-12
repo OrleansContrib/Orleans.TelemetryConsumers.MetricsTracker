@@ -28,6 +28,16 @@ namespace MetricsTracker.TestHost.TestDomain
         {
             LastFleebID = fleebID;
 
+            // uncomment the following code to see how exceptions are counted:
+            //   total exceptions reported
+            //   unique exceptions reported
+            //   specific counts per exception type
+
+            // generate exceptions about 10% of the time
+            //var rand = new Random(DateTime.UtcNow.Millisecond);
+            //if (rand.NextDouble() < 0.1)
+            //    throw new ApplicationException("RandomException");
+
             logger.IncrementMetric("Poof");
         }
     }

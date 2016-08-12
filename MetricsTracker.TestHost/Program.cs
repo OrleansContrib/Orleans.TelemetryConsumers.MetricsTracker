@@ -24,12 +24,25 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             });
 
             var config = ClientConfiguration.LocalhostSilo();
-            config.DefaultTraceLevel = Runtime.Severity.Verbose;
+            //config.DefaultTraceLevel = Runtime.Severity.Verbose;
             GrainClient.Initialize(config);
 
             // TODO: once the previous call returns, the silo is up and running.
             //       This is the place your custom logic, for example calling client logic
             //       or initializing an HTTP front end for accepting incoming requests.
+
+            // configure and start the reporting of silo metrics
+            var metrics = GrainClient.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
+            metrics.Configure(new MetricsConfiguration
+            {
+                Enabled = true,
+                SamplingInterval = TimeSpan.FromSeconds(1), // default
+                ConfigurationInterval = TimeSpan.FromSeconds(10), // default
+                StaleSiloMetricsDuration = TimeSpan.FromSeconds(10), // default
+                TrackExceptionCounters = true,
+                TrackMethodGrainCalls = true,
+                HistoryLength = 30 // default
+            }).Ignore();
 
             Console.WriteLine("Orleans Silo is running.\nPress Enter to terminate...");
             Console.ReadLine();

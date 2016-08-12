@@ -12,10 +12,12 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
     {
         Logger logger;
 
-        ObserverSubscriptionManager<IClusterMetricsGrainObserver> Subscribers;
+        MetricsConfiguration Configuration;
 
         MetricsSnapshot ClusterSnapshot;
         Dictionary<string, MetricsSnapshot> SiloSnapshots;
+
+        ObserverSubscriptionManager<IClusterMetricsGrainObserver> Subscribers;
 
         #region Streams
 
@@ -36,10 +38,12 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             {
                 logger = GetLogger("ClusterMetricsGrain");
 
-                Subscribers = new ObserverSubscriptionManager<IClusterMetricsGrainObserver>();
+                Configuration = new MetricsConfiguration();
 
-                SiloSnapshots = new Dictionary<string, MetricsSnapshot>();
                 ClusterSnapshot = new MetricsSnapshot { Source = nameof(ClusterMetricsGrain) };
+                SiloSnapshots = new Dictionary<string, MetricsSnapshot>();
+
+                Subscribers = new ObserverSubscriptionManager<IClusterMetricsGrainObserver>();
 
                 return base.OnActivateAsync();
             }
@@ -52,9 +56,30 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
+        public Task Configure(MetricsConfiguration config)
+        {
+            try
+            {
+                Configuration = config;
+
+                // TODO: figure out how to get MetricsTrackerTelemetryConsumer to get these notifications
+                //Subscribers.Notify(o => o.EnableClusterMetrics(config));
+
+                return TaskDone.Done;
+            }
+            catch (Exception ex)
+            {
+                logger.TrackException(ex);
+                throw;
+            }
+        }
+
         public Task Start()
         {
-            Subscribers.Notify(o => o.EnableClusterMetrics());
+            Configuration.Enabled = true;
+
+            Configure(Configuration);
+
             return TaskDone.Done;
         }
 
@@ -122,6 +147,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
 
 
+                // TODO: replace with a nice dashboard view somewhere.......
                 // for debugging purposes
                 logger.TrackTrace("---NEW SILO METRICS SNAPSHOT---");
                 LogMetricsSnapshot(snapshot);
@@ -131,22 +157,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
 
                 logger.IncrementMetric("SiloStatisticsReported");
-                logger.TrackTrace("SiloStatisticsReported");
-
-
-
-                // uncomment the following code to see how exceptions are counted:
-                //   total exceptions reported
-                //   unique exceptions reported
-                //   specific counts per exception type
-
-                // TODO: remove this!
-                // generate exceptions about 10% of the time
-                //var rand = new Random(DateTime.UtcNow.Millisecond);
-                //if (rand.NextDouble() < 0.1)
-                //    throw new ApplicationException("RandomException");
-
-
 
                 return TaskDone.Done;
             }
@@ -157,6 +167,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
+        // TODO: add unit tests
         MetricsSnapshot CalculateClusterMetrics(IList<MetricsSnapshot> siloSnapshots)
         {
             try
@@ -204,6 +215,33 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         public Task<MetricsSnapshot> GetClusterMetrics()
         {
             return Task.FromResult(ClusterSnapshot);
+        }
+
+        public Task<List<MetricsSnapshot>> GetAllMetrics()
+        {
+            try
+            {
+                // create a list of MetricsSnapshots with the cluster aggregate snapshot first
+                
+                var allMetrics = SiloSnapshots.Values.ToList();
+
+                if (allMetrics.Count == 0)
+                    allMetrics.Add(ClusterSnapshot);
+                else
+                    allMetrics.Insert(0, ClusterSnapshot);
+
+                return Task.FromResult(allMetrics);
+            }
+            catch (Exception ex)
+            {
+                logger.TrackException(ex);
+                throw;
+            }
+        }
+
+        public Task<MetricsConfiguration> GetMetricsConfiguration()
+        {
+            return Task.FromResult(Configuration);
         }
 
         //string GetStreamName(MetricType type, string metric)
