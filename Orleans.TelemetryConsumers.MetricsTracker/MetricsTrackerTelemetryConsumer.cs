@@ -115,13 +115,15 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 // TODO: figure out if this will interfere with other silo interceptors
                 ConfigureSiloInterceptor(enable: Configuration.NeedSiloInterceptor);
-
-                LastConfigCheck = DateTime.UtcNow;
             }
             catch (Exception ex)
             {
                 logger.TrackException(ex);
                 throw;
+            }
+            finally
+            {
+                LastConfigCheck = DateTime.UtcNow;
             }
         }
 
@@ -155,7 +157,12 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 foreach (var metric in Metrics)
                 {
+                    // current value
                     snapshot.Metrics.Add(metric.Key, metric.Value);
+
+                    // history
+                    MetricHistory.AddOrUpdate(metric.Key, new ConcurrentQueue<double>(),
+                        (key, value) => value);
 
                     MetricHistory[metric.Key].Enqueue(metric.Value);
 
@@ -164,7 +171,12 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 foreach (var counter in Counters)
                 {
+                    // current value
                     snapshot.Counters.Add(counter.Key, counter.Value);
+
+                    // history
+                    CounterHistory.AddOrUpdate(counter.Key, new ConcurrentQueue<long>(),
+                        (key, value) => value);
 
                     CounterHistory[counter.Key].Enqueue(counter.Value);
 
@@ -181,6 +193,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 foreach (var tsmetric in TimeSpanMetrics)
                 {
                     snapshot.TimeSpanMetrics.Add(tsmetric.Key, tsmetric.Value);
+
+                    // history
+                    TimeSpanMetricHistory.AddOrUpdate(tsmetric.Key, new ConcurrentQueue<TimeSpan>(),
+                        (key, value) => value);
 
                     TimeSpanMetricHistory[tsmetric.Key].Enqueue(tsmetric.Value);
 

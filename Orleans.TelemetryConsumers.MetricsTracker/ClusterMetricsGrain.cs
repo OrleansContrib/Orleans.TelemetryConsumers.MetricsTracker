@@ -21,10 +21,12 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         #region Streams
 
+        IStreamProvider StreamProvider;
+
+        IAsyncStream<MetricsSnapshot> ClusterSnapshotStream;
+        IAsyncStream<MetricsSnapshot> SiloSnapshotStream;
+
         // TODO: use these streams
-
-        IAsyncStream<MetricsSnapshot> SnapshotStream;
-
         Dictionary<string, IAsyncStream<long>> CounterStreams;
         Dictionary<string, IAsyncStream<double>> MetricStreams;
         Dictionary<string, IAsyncStream<TimeSpan>> TimeSpanMetricStreams;
@@ -56,16 +58,35 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
-        public Task Configure(MetricsConfiguration config)
+        public async Task Configure(MetricsConfiguration config)
         {
             try
             {
                 Configuration = config;
 
-                // TODO: figure out how to get MetricsTrackerTelemetryConsumer to get these notifications
-                //Subscribers.Notify(o => o.EnableClusterMetrics(config));
+                // TODO: figure out how to get MetricsTrackerTelemetryConsumer to get notifications
+                
+                // using grain observables
+                Subscribers.Notify(o => o.Configure(config));
 
-                return TaskDone.Done;
+                // using streams
+                if (!string.IsNullOrWhiteSpace(Configuration.StreamingProviderName))
+                {
+                    StreamProvider = GrainClient.GetStreamProvider(Configuration.StreamingProviderName);
+
+                    ClusterSnapshotStream = StreamProvider.GetStream<MetricsSnapshot>(Guid.Empty, "ClusterMetricSnapshots");
+                    SiloSnapshotStream = StreamProvider.GetStream<MetricsSnapshot>(Guid.Empty, "SiloMetricSnapshots");
+                }
+                else
+                {
+                    await ClusterSnapshotStream.OnCompletedAsync();
+                    await SiloSnapshotStream.OnCompletedAsync();
+
+                    ClusterSnapshotStream = null;
+                    SiloSnapshotStream = null;
+                }
+
+                logger.IncrementMetric("ClusterMetricsConfigured");
             }
             catch (Exception ex)
             {
@@ -74,20 +95,19 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
-        public Task Start()
+        public async Task Start()
         {
             Configuration.Enabled = true;
 
-            Configure(Configuration);
-
-            return TaskDone.Done;
+            await Configure(Configuration);
         }
-
+        
         // it's not expected that anyone would want to call Stop, but it seems odd to leave it out
-        public Task Stop()
+        public async Task Stop()
         {
-            Subscribers.Notify(o => o.DisableClusterMetrics());
-            return TaskDone.Done;
+            Configuration.Enabled = false;
+
+            await Configure(Configuration);
         }
 
         // used by a custom MetricsTrackerTelemetryConsumer on each silo
@@ -131,7 +151,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
-        public Task ReportSiloStatistics(MetricsSnapshot snapshot)
+        public async Task ReportSiloStatistics(MetricsSnapshot snapshot)
         {
             try
             {
@@ -140,25 +160,27 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                     SiloSnapshots.Add(snapshot.Source, snapshot);
                 else
                     SiloSnapshots[snapshot.Source] = snapshot;
+                
+                if (SiloSnapshotStream != null)
+                    await SiloSnapshotStream.OnNextAsync(snapshot);
 
                 // recalculate cluster metrics snapshot
                 // any time a silo snapshot is added or updated
                 ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values.ToList());
 
+                if (ClusterSnapshotStream != null)
+                    await ClusterSnapshotStream.OnNextAsync(ClusterSnapshot);
 
 
                 // TODO: replace with a nice dashboard view somewhere.......
                 // for debugging purposes
-                logger.TrackTrace("---NEW SILO METRICS SNAPSHOT---");
-                LogMetricsSnapshot(snapshot);
-                logger.TrackTrace("---NEW CLUSTER METRICS SNAPSHOT---");
-                LogMetricsSnapshot(ClusterSnapshot);
+                //logger.TrackTrace("---NEW SILO METRICS SNAPSHOT---");
+                //LogMetricsSnapshot(snapshot);
+                //logger.TrackTrace("---NEW CLUSTER METRICS SNAPSHOT---");
+                //LogMetricsSnapshot(ClusterSnapshot);
 
 
-
-                logger.IncrementMetric("SiloStatisticsReported");
-
-                return TaskDone.Done;
+                logger.IncrementMetric("SiloMetricsReported");
             }
             catch (Exception ex)
             {
@@ -244,18 +266,18 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             return Task.FromResult(Configuration);
         }
 
-        //string GetStreamName(MetricType type, string metric)
-        //{
-        //    var typeName =
-        //        type == MetricType.Counter ? "Counter"
-        //        : type == MetricType.Metric ? "Metric"
-        //        : type == MetricType.TimeSpanMetric ? "TimeSpanMetric"
-        //        : null;
+        string GetStreamName(MetricType type, string metric)
+        {
+            var typeName =
+                type == MetricType.Counter ? "Counter"
+                : type == MetricType.Metric ? "Metric"
+                : type == MetricType.TimeSpanMetric ? "TimeSpanMetric"
+                : null;
 
-        //    if (typeName == null)
-        //        throw new ArgumentException("Unknown MetricType");
+            if (typeName == null)
+                throw new ArgumentException("Unknown MetricType");
 
-        //    return $"{typeName}-{metric}";
-        //}
+            return $"{typeName}-{metric}";
+        }
     }
 }

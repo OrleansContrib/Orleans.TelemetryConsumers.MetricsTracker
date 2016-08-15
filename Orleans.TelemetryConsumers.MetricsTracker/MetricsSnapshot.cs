@@ -55,5 +55,17 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             Metrics = new Dictionary<string, double>();
             TimeSpanMetrics = new Dictionary<string, TimeSpan>();
         }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append($"MetricsSnapshot from {Source} (SiloCount={SiloCount})\n");
+
+            foreach (var metric in Metrics)
+                sb.Append($"--- [Metric] {metric.Key}={metric.Value}\n");
+
+            return sb.ToString();
+        }
     }
 }

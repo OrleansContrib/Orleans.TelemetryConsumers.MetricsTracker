@@ -13,7 +13,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         /// Depending on ConfigurationInterval, there will be some delay before metrics begin
         /// reporting or stop reporting.
         /// </summary>
-        public bool Enabled = false;
+        public bool Enabled = true;
 
         /// <summary>
         /// The time between metrics samples being taken and pushed to ClusterMetricsGrain.
@@ -62,5 +62,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         /// Default is 30.
         /// </summary>
         public int HistoryLength = 30;
+
+        /// <summary>
+        /// The name of the streaming provider to use for publishing metrics snapshots.
+        /// </summary>
+        public string StreamingProviderName = null;
     }
 }

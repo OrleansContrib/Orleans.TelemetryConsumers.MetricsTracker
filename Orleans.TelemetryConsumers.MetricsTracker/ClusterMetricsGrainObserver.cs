@@ -12,7 +12,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         {
         }
 
-        public void EnableClusterMetrics(MetricsConfiguration config)
+        public void Configure(MetricsConfiguration config)
         {
         }
     }

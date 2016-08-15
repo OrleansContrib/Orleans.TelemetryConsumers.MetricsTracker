@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker
 {
-    public interface IClusterMetricsGrainObserver : IGrainObserver
+    public enum MetricType
     {
-        void Configure(MetricsConfiguration config);
-        void DisableClusterMetrics();
+        Counter,
+        Metric,
+        TimeSpanMetric
     }
 }

@@ -5,11 +5,17 @@ using Orleans;
 using Orleans.Runtime.Configuration;
 using Orleans.TelemetryConsumers.MetricsTracker;
 using MetricsTracker.TestHost.TestDomain;
+using Orleans.Streams;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 {
     public class Program
     {
+        static IStreamProvider StreamProvider;
+
+        static IAsyncStream<MetricsSnapshot> ClusterSnapshotStream;
+        static IAsyncStream<MetricsSnapshot> SiloSnapshotStream;
+
         static void Main(string[] args)
         {
             var SyncContext = new SynchronizationContext();
@@ -25,6 +31,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             });
 
             var config = ClientConfiguration.LocalhostSilo();
+            config.AddSimpleMessageStreamProvider("SimpleStreamProvider");
+
             //config.DefaultTraceLevel = Runtime.Severity.Verbose;
             GrainClient.Initialize(config);
 
@@ -33,15 +41,17 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             //       or initializing an HTTP front end for accepting incoming requests.
 
             // configure and start the reporting of silo metrics
+            // UNCOMMENT BELOW to override configuration defaults
             var metrics = GrainClient.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
             metrics.Configure(new MetricsConfiguration
             {
-                Enabled = true,
+                Enabled = true, // default
                 SamplingInterval = TimeSpan.FromSeconds(1), // default
                 ConfigurationInterval = TimeSpan.FromSeconds(10), // default
                 StaleSiloMetricsDuration = TimeSpan.FromSeconds(10), // default
                 TrackExceptionCounters = true,
                 TrackMethodGrainCalls = true,
+                StreamingProviderName = "SimpleStreamProvider",
                 HistoryLength = 30 // default
             }).Ignore();
 
@@ -50,10 +60,26 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
             var sim = GrainClient.GrainFactory.GetGrain<ISimulatorGrain>(Guid.Empty);
             sim.StartSimulation(TimeSpan.FromMinutes(10), 200, 200, true).Ignore();
 
+            SubscribeToStream().Wait();
+
             Console.WriteLine("Orleans Silo is running.\nPress Enter to terminate...");
             Console.ReadLine();
 
             hostDomain.DoCallBack(ShutdownSilo);
+        }
+
+        static async Task SubscribeToStream()
+        {
+            StreamProvider = GrainClient.GetStreamProvider("SimpleStreamProvider");
+            ClusterSnapshotStream = StreamProvider
+                .GetStream<MetricsSnapshot>(Guid.Empty, "ClusterMetricSnapshots");
+
+            await ClusterSnapshotStream.SubscribeAsync(OnNewMetricSnapshot);
+        }
+
+        static async Task OnNewMetricSnapshot(MetricsSnapshot snapshot, StreamSequenceToken token)
+        {
+            Console.WriteLine(snapshot);
         }
 
         static void InitSilo(string[] args)
