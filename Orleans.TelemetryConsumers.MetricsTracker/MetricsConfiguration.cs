@@ -33,14 +33,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         /// </summary>
         public TimeSpan StaleSiloMetricsDuration = TimeSpan.FromSeconds(10);
 
-        // TODO: instead of this,
-        // TODO: work on using consensus mechanism to run singleton metrics grain on multiple silos
-        ///// <summary>
-        ///// The duration after which an uncommunicative silo is considered gone,
-        ///// and that silo's metrics data should be discarded.
-        ///// </summary>
-        //public TimeSpan FailedSiloMetricsDuration = TimeSpan.FromSeconds(10);
-
         /// <summary>
         /// Track total exceptions reported, total number of unique exceptions reported,
         /// and a counter for each Exception type name.

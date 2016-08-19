@@ -19,20 +19,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         ObserverSubscriptionManager<IClusterMetricsGrainObserver> Subscribers;
 
-        #region Streams
-
+        // Streams
         IStreamProvider StreamProvider;
-
         IAsyncStream<MetricsSnapshot> ClusterSnapshotStream;
         IAsyncStream<MetricsSnapshot> SiloSnapshotStream;
-
-        // TODO: use these streams
-        Dictionary<string, IAsyncStream<long>> CounterStreams;
-        Dictionary<string, IAsyncStream<double>> MetricStreams;
-        Dictionary<string, IAsyncStream<TimeSpan>> TimeSpanMetricStreams;
-        Dictionary<string, IAsyncStream<MeasuredRequest>> RequestStreams;
-
-        #endregion
 
         public override Task OnActivateAsync()
         {
@@ -67,20 +57,34 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 // TODO: figure out how to get MetricsTrackerTelemetryConsumer to get notifications
                 
                 // using grain observables
-                Subscribers.Notify(o => o.Configure(config));
+                if (Subscribers != null)
+                    Subscribers.Notify(o => o.Configure(config));
 
                 // using streams
                 if (!string.IsNullOrWhiteSpace(Configuration.StreamingProviderName))
                 {
-                    StreamProvider = GrainClient.GetStreamProvider(Configuration.StreamingProviderName);
+                    try
+                    {
+                        StreamProvider = GrainClient.GetStreamProvider(Configuration.StreamingProviderName);
 
-                    ClusterSnapshotStream = StreamProvider.GetStream<MetricsSnapshot>(Guid.Empty, "ClusterMetricSnapshots");
-                    SiloSnapshotStream = StreamProvider.GetStream<MetricsSnapshot>(Guid.Empty, "SiloMetricSnapshots");
+                        ClusterSnapshotStream = StreamProvider.GetStream<MetricsSnapshot>(Guid.Empty, "ClusterMetricSnapshots");
+                        SiloSnapshotStream = StreamProvider.GetStream<MetricsSnapshot>(Guid.Empty, "SiloMetricSnapshots");
+                    }
+                    catch (Exception ex)
+                    {
+                        // probably here because stream provider wasn't found
+                        // TODO: handle better
+                        logger.TrackException(ex);
+                        // don't rethrow the exception
+                    }
                 }
                 else
                 {
-                    await ClusterSnapshotStream.OnCompletedAsync();
-                    await SiloSnapshotStream.OnCompletedAsync();
+                    if (ClusterSnapshotStream != null)
+                        await ClusterSnapshotStream.OnCompletedAsync();
+
+                    if (SiloSnapshotStream != null)
+                        await SiloSnapshotStream.OnCompletedAsync();
 
                     ClusterSnapshotStream = null;
                     SiloSnapshotStream = null;
@@ -129,28 +133,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
-        void LogMetricsSnapshot(MetricsSnapshot snapshot)
-        {
-            try
-            {
-                logger.TrackTrace($"MetricsSnapshot from {snapshot.Source} (SiloCount = {snapshot.SiloCount})");
-
-                foreach (var counter in snapshot.Counters)
-                    logger.TrackTrace($"[Counter] {counter.Key} = {counter.Value}");
-
-                foreach (var metric in snapshot.Metrics)
-                    logger.TrackTrace($"[Metric] {metric.Key} = {metric.Value}");
-
-                foreach (var metric in snapshot.TimeSpanMetrics)
-                    logger.TrackTrace($"[TimeSpan Metric] {metric.Key} = {metric.Value}");
-            }
-            catch (Exception ex)
-            {
-                logger.TrackException(ex);
-                throw;
-            }
-        }
-
         public async Task ReportSiloStatistics(MetricsSnapshot snapshot)
         {
             try
@@ -170,15 +152,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 if (ClusterSnapshotStream != null)
                     await ClusterSnapshotStream.OnNextAsync(ClusterSnapshot);
-
-
-                // TODO: replace with a nice dashboard view somewhere.......
-                // for debugging purposes
-                //logger.TrackTrace("---NEW SILO METRICS SNAPSHOT---");
-                //LogMetricsSnapshot(snapshot);
-                //logger.TrackTrace("---NEW CLUSTER METRICS SNAPSHOT---");
-                //LogMetricsSnapshot(ClusterSnapshot);
-
 
                 logger.IncrementMetric("SiloMetricsReported");
             }

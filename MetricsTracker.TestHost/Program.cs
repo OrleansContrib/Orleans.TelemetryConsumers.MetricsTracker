@@ -2,10 +2,10 @@ using System;
 using System.Threading.Tasks;
 using System.Threading;
 using Orleans;
+using Orleans.Streams;
 using Orleans.Runtime.Configuration;
 using Orleans.TelemetryConsumers.MetricsTracker;
 using MetricsTracker.TestHost.TestDomain;
-using Orleans.Streams;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 {
@@ -14,12 +14,12 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
         static IStreamProvider StreamProvider;
 
         static IAsyncStream<MetricsSnapshot> ClusterSnapshotStream;
-        static IAsyncStream<MetricsSnapshot> SiloSnapshotStream;
+        //static IAsyncStream<MetricsSnapshot> SiloSnapshotStream;
 
         static void Main(string[] args)
         {
-            var SyncContext = new SynchronizationContext();
-            SynchronizationContext.SetSynchronizationContext(SyncContext);
+            //var SyncContext = new SynchronizationContext();
+            //SynchronizationContext.SetSynchronizationContext(SyncContext);
 
             // The Orleans silo environment is initialized in its own app domain in order to more
             // closely emulate the distributed situation, when the client and the server cannot
@@ -32,7 +32,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 
             var config = ClientConfiguration.LocalhostSilo();
             config.AddSimpleMessageStreamProvider("SimpleStreamProvider");
-
             //config.DefaultTraceLevel = Runtime.Severity.Verbose;
             GrainClient.Initialize(config);
 

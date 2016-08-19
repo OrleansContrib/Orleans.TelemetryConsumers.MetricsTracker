@@ -51,12 +51,14 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
                 siloHost.Config.Globals
                     .RegisterBootstrapProvider<OrleansDashboard.Dashboard>("OrleansDashboard");
 
-                siloHost.Config.Globals
-                    .RegisterBootstrapProvider<MetricsTrackerBootstrapProvider>("MetricsTracker");
-
                 siloHost.Config.AddSimpleMessageStreamProvider("SimpleStreamProvider");
 
                 siloHost.Config.AddMemoryStorageProvider("PubSubStore");
+
+                
+
+                siloHost.Config.Globals
+                    .RegisterBootstrapProvider<MetricsTrackerBootstrapProvider>("MetricsTracker");
 
                 ok = siloHost.StartOrleansSilo();
 
