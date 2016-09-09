@@ -1,6 +1,8 @@
 # Orleans.TelemetryConsumers.MetricsTracker
 The MetricsTracker telemetry consumer for Orleans provides a high-speed, thread-safe metrics repository that consumes normal Orleans logging method calls from within grains and Orleans clients, tracks counter increment, decrement, and metric updates, and makes that data available on request to a metrics grain or by subscribing to a metrics virtual stream.
 
+>The purpose of MetricsTracker isn't to visualize data directly, but to provide a simple, stable, performant, and effective streaming data source to feed a growing collection of useful Orleans monitoring, diagnostics & visualization tools.
+
 Because a metrics repository is stored in each silo, there are multiple silo metrics repositories in multi-silo clusters. To get a better picture of what all those metrics look like across the whole cluster, MetricsTracker aggregates the SiloMetricsSnapshots it creates into a ClusterMetricsSnapshot within the ClusterMetricsGrain, which is the front-end facade or API for the MetricsTracker extension. Once you plug in the bootstrap provider for this extension, it's through the ClusterMetricsGrain that you'll configure the metrics sampling and virtual streaming features.
 
 MetricsTracker was carefully designed to minimize impact, holding thread locks only where needed and for the minimum time possible, using Concurrent collection types, and sampling metrics at configurable intervals. In demo simulations, hundreds of thousands of stateless grains incrementing event counters and logging grain method calls had little apparent effect, at least without more rigorous performance measurements.
