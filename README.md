@@ -60,3 +60,6 @@ async Task OnNewMetricSnapshot(MetricsSnapshot snapshot, StreamSequenceToken tok
     // pump this data into some amazing visualization tools!
 }
 ```
+
+You can find a working sample project here:
+https://github.com/danvanderboom/Orleans.TelemetryConsumers.MetricsTracker/tree/master/MetricsTracker.TestHost
