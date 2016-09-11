@@ -44,6 +44,7 @@ namespace Orleans.TelemetryVisualisation.Vizceral
         public void ConfigureGrainClient()
         {
             var config = ClientConfiguration.LocalhostSilo();
+
             config.AddSimpleMessageStreamProvider(MetricsStreamProvider);
 
             // Attempt to connect a few times to overcome transient failures and to give the silo enough 

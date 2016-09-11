@@ -270,9 +270,6 @@
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="ApplicationInsights.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="package.json" />
     <Content Include="Vizceral\Avatar.jsx" />
     <Content Include="Vizceral\breadcrumbs.jsx" />

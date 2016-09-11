@@ -1,0 +1,63 @@
+﻿{
+  "ClusterId": "MyProduct-QA",
+  "NodeTypes": [
+    {
+      "NodeTypeId": "Storage",
+      "Services": [
+        {
+          "Id": "StorageService",
+          "Version": "3.0.0.0",
+          "Executable": "<path to .exe>",
+          "ExecutableArgs": "<arguments with tokens for special values>",
+          "Properties": [
+            { "ConfigFilesPackageUrl": "<URL to download config files package>" },
+            { "AnotherCustomProperty": "..." }
+          ]
+        },
+        {
+          "Id": "LoggingService",
+          "Version": "1.0.0.0",
+          "Executable": "<path to .exe>",
+          "ExecutableArgs": "<arguments with tokens for special values>"
+        }
+      ],
+      "Properties": [
+        { "FirstService": { "Id": "LoggingService", "Version": "1.0.0.0" } }
+      ]
+    },
+    {
+      "NodeTypeId": "ComputeA",
+      "Services": [
+        {
+          "Id": "ComputeServiceA",
+          "Version": "3.0.0.0",
+          "Executable": "<path to .exe>",
+          "ExecutableArgs": "<arguments with tokens for special values>"
+        },
+        {
+          "Id": "LoggingService",
+          "Version": "1.0.0.0",
+          "Executable": "<path to .exe>",
+          "ExecutableArgs": "<arguments with tokens for special values>"
+        }
+      ]
+    },
+    {
+      "NodeTypeId": "ComputeB",
+      "Services": [
+        {
+          "Id": "ComputeServiceB",
+          "Version": "1.0.0.0",
+          "Executable": "<path to .exe>",
+          "ExecutableArgs": "<arguments with tokens for special values>"
+        },
+        {
+          "Id": "LoggingService",
+          "Version": "1.0.0.0",
+          "Executable": "<path to .exe>",
+          "ExecutableArgs": "<arguments with tokens for special values>"
+        }
+      ]
+    }
+  ]
+}

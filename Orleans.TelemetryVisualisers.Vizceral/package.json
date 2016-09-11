@@ -49,11 +49,17 @@
   },
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "validate": "npm ls"
+    "validate": "npm ls",
+    "lint": "jshint ."
   },
   "-vs-binding": {
     "AfterBuild": [
       "build"
     ]
-  }
+  },
+  "pre-commit": [
+    "lint",
+    "validate",
+    "test"
+  ]
 }
