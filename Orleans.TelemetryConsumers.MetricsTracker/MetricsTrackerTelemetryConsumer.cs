@@ -6,6 +6,7 @@ using System.Threading;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Providers;
@@ -18,6 +19,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         Logger logger;
 
         IProviderRuntime Runtime;
+
+        private IManagementGrain Management;
+
 
         MetricsConfiguration Configuration;
         DateTime LastConfigCheck = DateTime.MinValue;
@@ -64,6 +68,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 // from which we can communicate with grains via normal grain references
                 // TODO: don't start the pump until it's been requested
                 StartMessagePump().Ignore();
+
+                Management = Runtime.GrainFactory.GetGrain<IManagementGrain>(0);
+                
             }
             catch (Exception ex)
             {
@@ -85,15 +92,37 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                     var result = await invoker.Invoke(grain, request);
 
                     if (Configuration.TrackMethodGrainCalls)
-                        logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}.{method.Name}");
+                    {
+                        // Would be nice if we could figure out if this is a local or remote call, and perhaps caller / calling silo... Unless I've got something backwards
+                        logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}:{method.Name}");
+                    }
 
                     return result;
+                }				
+                catch (TimeoutException ex) // Not sure if this is going to be an innerException here or if everything gets unrolled... Fingers crossed for now!
+                {
+                    if (Configuration.TrackExceptionCounters)
+                    {
+                        logger.IncrementMetric($"GrainInvokeTimeout:{grain.GetType().Name}:{method.Name}");
+                        logger.TrackException(ex, new Dictionary<string, string>
+                        {
+                            {"GrainType", grain.GetType().Name},
+                            {"MethodName", method.Name},
+                        });
+                    }
+                    throw;
                 }
                 catch (Exception ex)
                 {
                     if (Configuration.TrackExceptionCounters)
-                        logger.TrackException(ex);
-
+                    {
+                        logger.IncrementMetric($"GrainException:{grain.GetType().Name}:{method.Name}");
+                        logger.TrackException(ex, new Dictionary<string, string>
+                        {
+                            {"GrainType", grain.GetType().Name},
+                            {"MethodName", method.Name},
+                        });
+                    }
                     throw;
                 }
             });

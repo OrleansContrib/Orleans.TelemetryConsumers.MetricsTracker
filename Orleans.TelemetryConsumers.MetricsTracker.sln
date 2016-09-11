@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricsTracker.TestHost", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.TelemetryConsumers.MetricsTracker", "Orleans.TelemetryConsumers.MetricsTracker\Orleans.TelemetryConsumers.MetricsTracker.csproj", "{A3CC413E-E076-4F69-8D8A-93A4DEE16566}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.TelemetryVisualisation.Vizceral", "Orleans.TelemetryVisualisers.Vizceral\Orleans.TelemetryVisualisation.Vizceral.csproj", "{C503BF67-5A6E-4548-9241-330B167E98F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{A3CC413E-E076-4F69-8D8A-93A4DEE16566}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3CC413E-E076-4F69-8D8A-93A4DEE16566}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3CC413E-E076-4F69-8D8A-93A4DEE16566}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C503BF67-5A6E-4548-9241-330B167E98F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C503BF67-5A6E-4548-9241-330B167E98F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C503BF67-5A6E-4548-9241-330B167E98F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C503BF67-5A6E-4548-9241-330B167E98F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
