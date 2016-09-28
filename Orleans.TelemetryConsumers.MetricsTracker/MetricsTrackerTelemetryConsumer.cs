@@ -20,8 +20,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         IProviderRuntime Runtime;
 
-        private IManagementGrain Management;
+        IManagementGrain Management;
 
+        InvokeInterceptor PreviousInterceptor;
 
         MetricsConfiguration Configuration;
         DateTime LastConfigCheck = DateTime.MinValue;
@@ -63,14 +64,15 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 Requests = new ConcurrentDictionary<string, MeasuredRequest>();
                 RequestHistory = new ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>>();
-                
+
+                PreviousInterceptor = Runtime.GetInvokeInterceptor();
+
                 // start a message pump to give ourselves the right synchronization context
                 // from which we can communicate with grains via normal grain references
                 // TODO: don't start the pump until it's been requested
                 StartMessagePump().Ignore();
 
                 Management = Runtime.GrainFactory.GetGrain<IManagementGrain>(0);
-                
             }
             catch (Exception ex)
             {
@@ -78,7 +80,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 throw;
             }
         }
-
+        
         private void ConfigureSiloInterceptor(bool enable = true)
         {
             // TODO: harden this for production use
@@ -88,12 +90,16 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             {
                 try
                 {
+                    if (PreviousInterceptor != null)
+                        await PreviousInterceptor(method, request, grain, invoker);
+
                     // Invoke the request and return the result back to the caller.
                     var result = await invoker.Invoke(grain, request);
 
                     if (Configuration.TrackMethodGrainCalls)
                     {
-                        // Would be nice if we could figure out if this is a local or remote call, and perhaps caller / calling silo... Unless I've got something backwards
+                        // Would be nice if we could figure out if this is a local or remote call, 
+                        // and perhaps caller / calling silo... Unless I've got something backwards
                         logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}:{method.Name}");
                     }
 
@@ -139,10 +145,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
                 Configuration = await metricsGrain.GetMetricsConfiguration();
 
-                if (Configuration.HistoryLength != oldConfig.HistoryLength)
-                    TrimHistories();
+                //if (Configuration.HistoryLength != oldConfig.HistoryLength)
+                //    TrimHistories();
 
-                // TODO: figure out if this will interfere with other silo interceptors
                 ConfigureSiloInterceptor(enable: Configuration.NeedSiloInterceptor);
             }
             catch (Exception ex)
@@ -190,10 +195,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                     snapshot.Metrics.Add(metric.Key, metric.Value);
 
                     // history
-                    MetricHistory.AddOrUpdate(metric.Key, new ConcurrentQueue<double>(),
-                        (key, value) => value);
+                    //MetricHistory.AddOrUpdate(metric.Key, new ConcurrentQueue<double>(),
+                    //    (key, value) => value);
 
-                    MetricHistory[metric.Key].Enqueue(metric.Value);
+                    //MetricHistory[metric.Key].Enqueue(metric.Value);
 
                     logger.Verbose("[Metric] " + metric.Key + " = " + metric.Value);
                 }
@@ -204,17 +209,17 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                     snapshot.Counters.Add(counter.Key, counter.Value);
 
                     // history
-                    CounterHistory.AddOrUpdate(counter.Key, new ConcurrentQueue<long>(),
-                        (key, value) => value);
+                    //CounterHistory.AddOrUpdate(counter.Key, new ConcurrentQueue<long>(),
+                    //    (key, value) => value);
 
-                    CounterHistory[counter.Key].Enqueue(counter.Value);
+                    //CounterHistory[counter.Key].Enqueue(counter.Value);
 
                     logger.Verbose("[Counter] " + counter.Key + " = " + counter.Value);
                 }
 
                 foreach (var request in Requests)
                 {
-                    RequestHistory[request.Key].Enqueue(request.Value);
+                    //RequestHistory[request.Key].Enqueue(request.Value);
 
                     logger.Verbose("[Request] " + request.Key + " = " + request.Value);
                 }
@@ -224,15 +229,15 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                     snapshot.TimeSpanMetrics.Add(tsmetric.Key, tsmetric.Value);
 
                     // history
-                    TimeSpanMetricHistory.AddOrUpdate(tsmetric.Key, new ConcurrentQueue<TimeSpan>(),
-                        (key, value) => value);
+                    //TimeSpanMetricHistory.AddOrUpdate(tsmetric.Key, new ConcurrentQueue<TimeSpan>(),
+                    //    (key, value) => value);
 
-                    TimeSpanMetricHistory[tsmetric.Key].Enqueue(tsmetric.Value);
+                    //TimeSpanMetricHistory[tsmetric.Key].Enqueue(tsmetric.Value);
 
                     logger.Verbose("[Time Span Metric] " + tsmetric.Key + " = " + tsmetric.Value);
                 }
 
-                TrimHistories();
+                //TrimHistories();
 
                 // report silo statistics to cluster metrics grain
                 var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
