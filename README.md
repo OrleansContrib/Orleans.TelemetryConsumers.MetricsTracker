@@ -8,7 +8,7 @@ Because a metrics repository is stored in each silo, there are multiple silo met
 MetricsTracker was carefully designed to minimize impact, holding thread locks only where needed and for the minimum time possible, using Concurrent collection types, and sampling metrics at configurable intervals. In demo simulations, hundreds of thousands of stateless grains incrementing event counters and logging grain method calls had little apparent effect, at least without more rigorous performance measurements.
 
 MetricsTracker can be easily added to your silo host using this Nuget package:
-https://www.nuget.org/packages/Orleans.TelemetryConsumers.MetricsTracker/0.9.4-alpha
+https://www.nuget.org/packages/Orleans.TelemetryConsumers.MetricsTracker/
 
 ...and this recommended code-based configuration (in OrleansHostWrapper.Run if you're using the project template):
 
@@ -64,4 +64,4 @@ async Task OnNewMetricSnapshot(MetricsSnapshot snapshot, StreamSequenceToken tok
 ```
 
 You can find a working sample project here:
-https://github.com/danvanderboom/Orleans.TelemetryConsumers.MetricsTracker/tree/master/MetricsTracker.TestHost
+https://github.com/OrleansContrib/Orleans.TelemetryConsumers.MetricsTracker/tree/master/MetricsTracker.TestHost
