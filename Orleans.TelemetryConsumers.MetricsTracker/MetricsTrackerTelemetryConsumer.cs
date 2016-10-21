@@ -269,6 +269,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         {
             try
             {
+                if (!CounterHistory.ContainsKey(name))
+                    return;
+
                 long counter;
                 while (CounterHistory[name].Count > Configuration.HistoryLength)
                     if (!CounterHistory[name].TryDequeue(out counter))
@@ -285,6 +288,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         {
             try
             {
+                if (!MetricHistory.ContainsKey(name))
+                    return;
+
                 double metric;
                 while (MetricHistory[name].Count > Configuration.HistoryLength)
                     if (!MetricHistory[name].TryDequeue(out metric))
@@ -301,6 +307,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         {
             try
             {
+                if (!TimeSpanMetricHistory.ContainsKey(name))
+                    return;
+
                 TimeSpan metric;
                 while (TimeSpanMetricHistory[name].Count > Configuration.HistoryLength)
                     if (!TimeSpanMetricHistory[name].TryDequeue(out metric))
@@ -317,6 +326,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         {
             try
             {
+                if (!RequestHistory.ContainsKey(name))
+                    return;
+
                 MeasuredRequest request;
                 while (RequestHistory[name].Count > Configuration.HistoryLength)
                     if (!RequestHistory[name].TryDequeue(out request))
