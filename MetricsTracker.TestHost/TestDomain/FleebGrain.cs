@@ -33,6 +33,14 @@ namespace MetricsTracker.TestHost.TestDomain
 
         public async Task Boop()
         {
+            // produce exceptions randomly
+            if (rand.NextDouble() < 0.0009)
+                throw new ApplicationException("BLAM!");
+            else if (rand.NextDouble() < 0.0009)
+                throw new InvalidOperationException("POW!");
+            else if (rand.NextDouble() < 0.0009)
+                throw new NotFiniteNumberException("WHACK!");
+
             if (Bloords.Count < 1)
             {
                 logger.IncrementMetric("NothingToBoop");

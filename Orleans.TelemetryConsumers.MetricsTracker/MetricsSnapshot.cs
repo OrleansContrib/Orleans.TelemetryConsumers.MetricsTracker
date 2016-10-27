@@ -62,7 +62,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
             sb.Append($"MetricsSnapshot from {Source} (SiloCount={SiloCount})\n");
 
-            foreach (var metric in Metrics)
+            foreach (var metric in Metrics.OrderBy(m => m.Key))
                 sb.Append($"--- [Metric] {metric.Key}={metric.Value}\n");
 
             return sb.ToString();

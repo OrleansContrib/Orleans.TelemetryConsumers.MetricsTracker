@@ -24,6 +24,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         IAsyncStream<MetricsSnapshot> ClusterSnapshotStream;
         IAsyncStream<MetricsSnapshot> SiloSnapshotStream;
 
+        IDisposable ClusterMetricsTimer;
+
         public override Task OnActivateAsync()
         {
             try
@@ -69,6 +71,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                         ClusterSnapshotStream = StreamProvider.GetStream<MetricsSnapshot>(Guid.Empty, "ClusterMetricSnapshots");
                         SiloSnapshotStream = StreamProvider.GetStream<MetricsSnapshot>(Guid.Empty, "SiloMetricSnapshots");
+
+                        ActivateClusterMetricsTimer();
                     }
                     catch (Exception ex)
                     {
@@ -101,9 +105,14 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         public async Task Start()
         {
+            if (Configuration == null)
+                throw new InvalidOperationException("ClusterMetricsGrain must be configured before it can be started.");
+
             Configuration.Enabled = true;
 
             await Configure(Configuration);
+
+            ActivateClusterMetricsTimer();
         }
         
         // it's not expected that anyone would want to call Stop, but it seems odd to leave it out
@@ -112,6 +121,32 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             Configuration.Enabled = false;
 
             await Configure(Configuration);
+
+            DisposeClusterMetricsTimer();
+        }
+
+        void ActivateClusterMetricsTimer()
+        {
+            if (ClusterMetricsTimer == null)
+                ClusterMetricsTimer = RegisterTimer(ClusterMetricsTimerTriggered, null,
+                    dueTime: TimeSpan.FromMilliseconds(50),
+                    period: Configuration.SamplingInterval);
+        }
+
+        void DisposeClusterMetricsTimer()
+        {
+            if (ClusterMetricsTimer != null)
+                ClusterMetricsTimer.Dispose();
+        }
+
+        async Task ClusterMetricsTimerTriggered(object state)
+        {
+            if (ClusterSnapshotStream == null || SiloSnapshots.Count == 0)
+                return;
+
+            ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values.ToList());
+
+            await ClusterSnapshotStream.OnNextAsync(ClusterSnapshot);
         }
 
         // used by a custom MetricsTrackerTelemetryConsumer on each silo
@@ -148,10 +183,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 // recalculate cluster metrics snapshot
                 // any time a silo snapshot is added or updated
-                ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values.ToList());
+                //ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values.ToList());
 
-                if (ClusterSnapshotStream != null)
-                    await ClusterSnapshotStream.OnNextAsync(ClusterSnapshot);
+                //if (ClusterSnapshotStream != null)
+                //    await ClusterSnapshotStream.OnNextAsync(ClusterSnapshot);
 
                 logger.IncrementMetric("SiloMetricsReported");
             }

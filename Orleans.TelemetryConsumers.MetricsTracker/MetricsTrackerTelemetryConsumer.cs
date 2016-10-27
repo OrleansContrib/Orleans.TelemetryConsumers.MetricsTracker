@@ -10,6 +10,8 @@ using System.Diagnostics;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Providers;
+using System.Reflection;
+using Orleans.CodeGeneration;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker
 {
@@ -42,6 +44,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         object RequestsLock = new object();
         ConcurrentDictionary<string, MeasuredRequest> Requests;
         ConcurrentDictionary<string, ConcurrentQueue<MeasuredRequest>> RequestHistory;
+
+        bool IsInvokeInterceptorSet = false;
 
         public MetricsTrackerTelemetryConsumer(IProviderRuntime runtime)
         {
@@ -80,58 +84,71 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 throw;
             }
         }
-        
+
         private void ConfigureSiloInterceptor(bool enable = true)
         {
+            if (IsInvokeInterceptorSet && !enable)
+            {
+                Runtime.SetInvokeInterceptor(PreviousInterceptor);
+                IsInvokeInterceptorSet = false;
+                return;
+            }
+
             // TODO: harden this for production use
             // TODO: add tracking of the time each grain method call took to complete
-            // TODO: make this optional, enabled or disabled via ClusterMetricsGrain calls
-            Runtime.SetInvokeInterceptor(async (method, request, grain, invoker) =>
+            if (!IsInvokeInterceptorSet && enable)
             {
-                try
+                Runtime.SetInvokeInterceptor(SiloInterceptor);
+                IsInvokeInterceptorSet = true;
+            }
+        }
+
+        async Task<object> SiloInterceptor(MethodInfo method, InvokeMethodRequest request, 
+            IGrain grain, IGrainMethodInvoker invoker)
+        {
+            try
+            {
+                if (PreviousInterceptor != null)
+                    await PreviousInterceptor(method, request, grain, invoker);
+
+                // Invoke the request and return the result back to the caller.
+                var result = await invoker.Invoke(grain, request);
+
+                if (Configuration.TrackMethodGrainCalls)
                 {
-                    if (PreviousInterceptor != null)
-                        await PreviousInterceptor(method, request, grain, invoker);
-
-                    // Invoke the request and return the result back to the caller.
-                    var result = await invoker.Invoke(grain, request);
-
-                    if (Configuration.TrackMethodGrainCalls)
-                    {
-                        // Would be nice if we could figure out if this is a local or remote call, 
-                        // and perhaps caller / calling silo... Unless I've got something backwards
-                        logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}:{method.Name}");
-                    }
-
-                    return result;
-                }				
-                catch (TimeoutException ex) // Not sure if this is going to be an innerException here or if everything gets unrolled... Fingers crossed for now!
-                {
-                    if (Configuration.TrackExceptionCounters)
-                    {
-                        logger.IncrementMetric($"GrainInvokeTimeout:{grain.GetType().Name}:{method.Name}");
-                        logger.TrackException(ex, new Dictionary<string, string>
-                        {
-                            {"GrainType", grain.GetType().Name},
-                            {"MethodName", method.Name},
-                        });
-                    }
-                    throw;
+                    // Would be nice if we could figure out if this is a local or remote call, 
+                    // and perhaps caller / calling silo... Unless I've got something backwards
+                    logger.IncrementMetric($"GrainMethodCall:{grain.GetType().Name}:{method.Name}");
                 }
-                catch (Exception ex)
+
+                return result;
+            }
+            catch (TimeoutException ex) // Not sure if this is going to be an innerException here or if everything gets unrolled... Fingers crossed for now!
+            {
+                if (Configuration.TrackExceptionCounters)
                 {
-                    if (Configuration.TrackExceptionCounters)
-                    {
-                        logger.IncrementMetric($"GrainException:{grain.GetType().Name}:{method.Name}");
-                        logger.TrackException(ex, new Dictionary<string, string>
-                        {
-                            {"GrainType", grain.GetType().Name},
-                            {"MethodName", method.Name},
-                        });
-                    }
-                    throw;
+                    logger.IncrementMetric($"GrainInvokeTimeout:{grain.GetType().Name}:{method.Name}");
+                    logger.TrackException(ex, new Dictionary<string, string>
+                            {
+                                {"GrainType", grain.GetType().Name},
+                                {"MethodName", method.Name},
+                            });
                 }
-            });
+                throw;
+            }
+            catch (Exception ex)
+            {
+                if (Configuration.TrackExceptionCounters)
+                {
+                    logger.IncrementMetric($"GrainException:{grain.GetType().Name}:{method.Name}");
+                    logger.TrackException(ex, new Dictionary<string, string>
+                            {
+                                {"GrainType", grain.GetType().Name},
+                                {"MethodName", method.Name},
+                            });
+                }
+                throw;
+            }
         }
 
         // TODO: figure out how to subscribe with a GrainObserver, or some other method
@@ -473,7 +490,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             }
         }
 
-        
+
 
         //async Task Experiment()
         //{
@@ -521,8 +538,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         }
 
         // TODO: figure out what to do with properties and metrics
-        public void TrackException(Exception exception, 
-            IDictionary<string, string> properties = null, 
+        public void TrackException(Exception exception,
+            IDictionary<string, string> properties = null,
             IDictionary<string, double> metrics = null)
         {
             try
