@@ -13,6 +13,6 @@
     <description>An extension for Orleans which intercepts all telemetry calls, calculates and tracks the metrics on each silo, and aggregates all of the silo metrics into a ClusterMetricsGrain. The metrics stored in this grain can be accessed from any grain or Orleans client.</description>
     <copyright>Copyright 2016</copyright>
     <tags>Measurement Metrics Counters Telemetry APM Monitor</tags>
-    <releaseNotes>Now calling previous silo interceptor from new silo interceptor; removed metrics histories until it can be fully implemented.</releaseNotes>
+    <releaseNotes>ClusterMetricsSnapshots are now published at regular intervals instead of being published once per SiloMetricsSnapshot report; corrected (added await) to async calls in TestHost; sorted metrics snapshot output in TestHost; added ability, through subsequent calls to ClusterMetricsGrain.Configure, to remove the silo interceptor if no longer needed, or to add it back safely when it's requested again.</releaseNotes>
   </metadata>
 </package>

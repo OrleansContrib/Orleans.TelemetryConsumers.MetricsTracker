@@ -83,6 +83,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="BuildNuget.bat" />
+    <None Include="Orleans.TelemetryConsumers.MetricsTracker.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
