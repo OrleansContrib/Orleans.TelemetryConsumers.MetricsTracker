@@ -365,9 +365,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 if (Counters.ContainsKey(name))
                     return;
 
-                // Counters.GetOrAdd(name, 0);
-
-                //Counters.Add(name, new List<int> { 0 });
+                if (!Counters.TryAdd(name, 0))
+                    throw new ApplicationException("Couldn't add new counter");
             }
             catch (Exception ex)
             {
@@ -384,7 +383,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 if (Metrics.ContainsKey(name))
                     return;
 
-                //Metrics.Add(name, new List<double> { 0 });
+                Metrics.AddOrUpdate(name, addValue: 0, updateValueFactory: (s, d) => 0);
             }
             catch (Exception ex)
             {
@@ -477,11 +476,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 }
 
                 TrimMetricsHistory(name);
-
-                //var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
-                //metricsGrain.ReportSiloStatistics(new MetricsSnapshot()).Wait();
-
-                //StartMessagePump();
             }
             catch (Exception ex)
             {
@@ -601,12 +595,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 AddProperties(properties);
 
                 if (!Metrics.ContainsKey(name))
-                {
                     AddMetric(name);
-                    //Metrics[name].Add(value);
-                }
-                //else
-                //    Metrics[name].Add(value);
+
+                Metrics[name] = value;
 
                 TrimMetricsHistory(name);
             }

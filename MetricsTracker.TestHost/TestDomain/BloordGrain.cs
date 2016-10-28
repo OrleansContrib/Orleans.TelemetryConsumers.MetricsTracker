@@ -39,6 +39,8 @@ namespace MetricsTracker.TestHost.TestDomain
             //    throw new ApplicationException("RandomException");
 
             logger.IncrementMetric("Poof");
+
+            logger.TrackMetric("RandomValue", rand.Next(1, 100));
         }
     }
 }
