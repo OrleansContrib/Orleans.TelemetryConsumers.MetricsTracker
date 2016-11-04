@@ -179,14 +179,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestDomain\IBloordGrain.cs" />
-    <Compile Include="TestDomain\BloordGrain.cs" />
-    <Compile Include="TestDomain\FleebGrain.cs" />
-    <Compile Include="TestDomain\IFleebGrain.cs" />
-    <Compile Include="TestDomain\ISimulatorGrain.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="OrleansHostWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestDomain\BloordGrain.cs" />
+    <Compile Include="TestDomain\FleebGrain.cs" />
+    <Compile Include="TestDomain\IBloordGrain.cs" />
+    <Compile Include="TestDomain\IFleebGrain.cs" />
+    <Compile Include="TestDomain\ISimulatorGrain.cs" />
     <Compile Include="TestDomain\SimulatorGrain.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -199,6 +199,10 @@
     <ProjectReference Include="..\Orleans.TelemetryConsumers.MetricsTracker\Orleans.TelemetryConsumers.MetricsTracker.csproj">
       <Project>{A3CC413E-E076-4F69-8D8A-93A4DEE16566}</Project>
       <Name>Orleans.TelemetryConsumers.MetricsTracker</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OrleansMetrics.TestHost.Model\OrleansMetrics.TestHost.Model.csproj">
+      <Project>{e748911a-98a6-4a4c-a042-9082ab9968e4}</Project>
+      <Name>OrleansMetrics.TestHost.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

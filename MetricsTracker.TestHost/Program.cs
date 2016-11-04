@@ -4,7 +4,7 @@ using System.Threading;
 using Orleans;
 using Orleans.Streams;
 using Orleans.Runtime.Configuration;
-using MetricsTracker.TestHost.TestDomain;
+using MetricsTracker.TestDomain;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 {

@@ -183,7 +183,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
                 // recalculate cluster metrics snapshot
                 // any time a silo snapshot is added or updated
-                //ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values.ToList());
+                ClusterSnapshot = CalculateClusterMetrics(SiloSnapshots.Values.ToList());
 
                 //if (ClusterSnapshotStream != null)
                 //    await ClusterSnapshotStream.OnNextAsync(ClusterSnapshot);
