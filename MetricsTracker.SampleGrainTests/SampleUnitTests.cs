@@ -44,7 +44,7 @@ namespace MetricsTracker.SampleGrainTests
             var blood = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
             await blood.Poof(Guid.NewGuid());
 
-            Task.Delay(500).Wait();
+            await Task.Delay(500);
 
             var snapshot = await ClusterMetricsGrain.GetClusterMetrics();
 
