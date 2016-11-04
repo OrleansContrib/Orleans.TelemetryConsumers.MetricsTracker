@@ -12,6 +12,8 @@ namespace MetricsTracker.SampleGrainTests
     {
         static TestCluster Cluster;
 
+        static IClusterMetricsGrain ClusterMetricsGrain;
+
         [ClassInitialize]
         public static void Initialize(TestContext context)
         {
@@ -22,20 +24,30 @@ namespace MetricsTracker.SampleGrainTests
 
             Cluster = new TestCluster(options);
             Cluster.Deploy();
+
+            ClusterMetricsGrain = Cluster.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
+            ClusterMetricsGrain.Configure(new MetricsConfiguration
+            {
+                SamplingInterval = TimeSpan.FromMilliseconds(1),
+                ConfigurationInterval = TimeSpan.FromDays(1)
+            }).Wait();
         }
 
         [TestMethod]
         public void TestOrleansClusterCounters()
         {
-            var x = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
-            x.Poof(Guid.NewGuid()).Wait();
-            //Cannot find generated GrainReference class 
-            //for interface 'MetricsTracker.TestHost.TestDomain.IBloordGrain'
+            TestOrleansClusterWithMetrics().Wait();
+        }
 
-            Task.Delay(2000).Wait();
+        async Task TestOrleansClusterWithMetrics()
+        {
+            var blood = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
+            await blood.Poof(Guid.NewGuid());
+
+            Task.Delay(100).Wait();
 
             var metricsGrain = Cluster.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
-            var snapshot = metricsGrain.GetClusterMetrics().Result;
+            var snapshot = await metricsGrain.GetClusterMetrics();
 
             var poofCount = snapshot.Metrics.ContainsKey("Poof") ? snapshot.Metrics["Poof"] : 0;
 
