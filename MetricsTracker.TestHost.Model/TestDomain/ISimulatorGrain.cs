@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Orleans;
 using System;
 
-namespace MetricsTracker.TestDomain
+namespace MetricsTracker.TestHost.Model
 {
 	public interface ISimulatorGrain : IGrainWithGuidKey
     {

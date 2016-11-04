@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Orleans;
 using Orleans.Runtime;
 
-namespace MetricsTracker.TestDomain
+namespace MetricsTracker.TestHost.Model
 {
     public class BloordGrain : Grain, IBloordGrain
     {

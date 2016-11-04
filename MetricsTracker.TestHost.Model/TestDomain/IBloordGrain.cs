@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MetricsTracker.TestDomain
+namespace MetricsTracker.TestHost.Model
 {
     public interface IBloordGrain : IGrainWithGuidKey
     {

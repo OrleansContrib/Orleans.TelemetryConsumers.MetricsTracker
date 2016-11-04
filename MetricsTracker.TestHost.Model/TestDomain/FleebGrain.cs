@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MetricsTracker.TestDomain
+namespace MetricsTracker.TestHost.Model
 {
     public class FleebGrain : Grain, IFleebGrain
     {
@@ -17,7 +17,7 @@ namespace MetricsTracker.TestDomain
 
         public override Task OnActivateAsync()
         {
-            logger = GetLogger("FleebGrain");
+            logger = GetLogger(nameof(FleebGrain));
 
             rand = new Random();
 
@@ -33,17 +33,17 @@ namespace MetricsTracker.TestDomain
 
         public async Task Boop()
         {
-            // produce exceptions randomly
-            if (rand.NextDouble() < 0.0009)
-                throw new ApplicationException("BLAM!");
-            else if (rand.NextDouble() < 0.0009)
-                throw new InvalidOperationException("POW!");
-            else if (rand.NextDouble() < 0.0009)
-                throw new NotFiniteNumberException("WHACK!");
+            // TODO: uncomment this code to produce exceptions randomly
+            //if (rand.NextDouble() < 0.0009)
+            //    throw new ApplicationException("BLAM!");
+            //else if (rand.NextDouble() < 0.0009)
+            //    throw new InvalidOperationException("POW!");
+            //else if (rand.NextDouble() < 0.0009)
+            //    throw new NotFiniteNumberException("WHACK!");
 
             if (Bloords.Count < 1)
             {
-                logger.IncrementMetric("NothingToBoop");
+                logger.IncrementMetric(Metrics.NothingToBoop);
                 return;
             }
 
@@ -55,7 +55,7 @@ namespace MetricsTracker.TestDomain
                 var bloord = GrainFactory.GetGrain<IBloordGrain>(bloordID);
                 await bloord.Poof(bloordID);
 
-                logger.IncrementMetric("Boop");
+                logger.IncrementMetric(Metrics.Boop);
             }
         }
     }

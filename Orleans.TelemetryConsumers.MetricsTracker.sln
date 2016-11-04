@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.TelemetryVisualisat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricsTracker.SampleGrainTests", "MetricsTracker.SampleGrainTests\MetricsTracker.SampleGrainTests.csproj", "{F1A89BCE-C7FE-411B-A946-33F3FA8D9D8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansMetrics.TestHost.Model", "OrleansMetrics.TestHost.Model\OrleansMetrics.TestHost.Model.csproj", "{E748911A-98A6-4A4C-A042-9082AB9968E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricsTracker.TestHost.Model", "MetricsTracker.TestHost.Model\MetricsTracker.TestHost.Model.csproj", "{E748911A-98A6-4A4C-A042-9082AB9968E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

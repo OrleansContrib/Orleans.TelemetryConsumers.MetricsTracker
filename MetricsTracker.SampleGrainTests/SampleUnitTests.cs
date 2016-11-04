@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Orleans.TestingHost;
 using Orleans.TelemetryConsumers.MetricsTracker;
-using MetricsTracker.TestDomain;
+using MetricsTracker.TestHost.Model;
 
 namespace MetricsTracker.SampleGrainTests
 {
@@ -39,15 +39,20 @@ namespace MetricsTracker.SampleGrainTests
 
         async Task TestOrleansClusterWithMetricsAsync()
         {
+            var fleeb = Cluster.GrainFactory.GetGrain<IFleebGrain>(Guid.NewGuid());
+            await fleeb.Boop();
+
             var blood = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
             await blood.Poof(Guid.NewGuid());
 
             var snapshot = await ClusterMetricsGrain.GetNextClusterMetrics(
                 timeout: TimeSpan.FromSeconds(10));
 
-            var poofCount = snapshot.Metrics.ContainsKey("Poof") ? snapshot.Metrics["Poof"] : 0;
+            var poofCount = snapshot.Metrics.ContainsKey(Metrics.Poof) ? snapshot.Metrics["Poof"] : 0;
 
-            Assert.AreEqual(1, poofCount);
+            Assert.IsNotNull(snapshot);
+            Assert.IsTrue(snapshot.Metrics.ContainsKey("Poof"));
+            Assert.AreEqual(1, snapshot.Metrics["Poof"]);
         }
     }
 }
