@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Orleans.TestingHost;
 using Orleans.TelemetryConsumers.MetricsTracker;
 using MetricsTracker.TestDomain;
-using System.Threading.Tasks;
 
 namespace MetricsTracker.SampleGrainTests
 {
@@ -32,17 +32,15 @@ namespace MetricsTracker.SampleGrainTests
         }
 
         [TestMethod]
-        public void TestOrleansClusterCounters()
+        public void TestOrleansClusterWithMetrics()
         {
-            TestOrleansClusterWithMetrics().Wait();
+            TestOrleansClusterWithMetricsAsync().Wait();
         }
 
-        async Task TestOrleansClusterWithMetrics()
+        async Task TestOrleansClusterWithMetricsAsync()
         {
             var blood = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
             await blood.Poof(Guid.NewGuid());
-
-            await Task.Delay(500);
 
             var snapshot = await ClusterMetricsGrain.GetNextClusterMetrics(TimeSpan.FromSeconds(10));
 
