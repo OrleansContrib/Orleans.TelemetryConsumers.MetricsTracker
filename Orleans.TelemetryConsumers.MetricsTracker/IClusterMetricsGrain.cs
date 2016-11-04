@@ -32,6 +32,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         /// </summary>
         Task<MetricsSnapshot> GetClusterMetrics();
 
+        Task<MetricsSnapshot> GetNextClusterMetrics(TimeSpan timeout);
+
         /// <summary>
         /// Get a metrics snapshot for the cluster as a whole and for each of the silos.
         /// </summary>

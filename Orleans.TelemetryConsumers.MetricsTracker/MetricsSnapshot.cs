@@ -14,6 +14,12 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
     public class MetricsSnapshot
     {
         /// <summary>
+        /// Unique ID for this snapshot, used to differentiate between snapshots of the same silo
+        /// or cluster.
+        /// </summary>
+        public Guid id = Guid.NewGuid();
+
+        /// <summary>
         /// The date and time the snapshot was created. Used to determine when the data is stale
         /// or to detect silo failures and network partitions.
         /// </summary>

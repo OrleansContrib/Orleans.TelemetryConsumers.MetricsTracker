@@ -59,5 +59,14 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         /// The name of the streaming provider to use for publishing metrics snapshots.
         /// </summary>
         public string StreamingProviderName = null;
+
+        public static MetricsConfiguration CreateUnitTestConfig()
+        {
+            return new MetricsConfiguration
+            {
+                SamplingInterval = TimeSpan.FromMilliseconds(25),
+                ConfigurationInterval = TimeSpan.FromDays(1)
+            };
+        }
     }
 }

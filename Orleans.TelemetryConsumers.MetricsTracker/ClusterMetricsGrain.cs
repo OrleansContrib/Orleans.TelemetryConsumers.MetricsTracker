@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using Orleans;
 using Orleans.Streams;
 using Orleans.Runtime;
+using Orleans.Concurrency;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker
 {
+    [Reentrant]
     public class ClusterMetricsGrain : Grain, IClusterMetricsGrain
     {
         Logger logger;
@@ -30,7 +32,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         {
             try
             {
-                logger = GetLogger("ClusterMetricsGrain");
+                logger = GetLogger(nameof(ClusterMetricsGrain));
 
                 Configuration = new MetricsConfiguration();
 
@@ -245,6 +247,33 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         public Task<MetricsSnapshot> GetClusterMetrics()
         {
             return Task.FromResult(ClusterSnapshot);
+        }
+
+        public async Task<MetricsSnapshot> GetNextClusterMetrics(TimeSpan timeout)
+        {
+            if (timeout == null)
+                timeout = TimeSpan.FromSeconds(10);
+
+            var startTime = DateTime.UtcNow;
+            var baselineMetrics = SiloSnapshots.Values.Select(kvp => kvp.id).ToList();
+
+            while (true)
+            {
+                await Task.Delay(Configuration.SamplingInterval);
+
+                if (startTime.Add(timeout) < DateTime.UtcNow)
+                    throw new TimeoutException("Timed out waiting for fresh MetricsSnapshots from one or more silos");
+
+                var newMetrics = SiloSnapshots.Values.Select(kvp => kvp.id).ToList();
+                var newSiloCount = SiloSnapshots.Count;
+
+                // any of the old IDs still around?
+                var staleSnapshotIDs = newMetrics.Where(p => baselineMetrics.Any(p2 => p2 == p));
+                if (staleSnapshotIDs.Count() > 0)
+                    continue;
+
+                return ClusterSnapshot;
+            }
         }
 
         public Task<List<MetricsSnapshot>> GetAllMetrics()

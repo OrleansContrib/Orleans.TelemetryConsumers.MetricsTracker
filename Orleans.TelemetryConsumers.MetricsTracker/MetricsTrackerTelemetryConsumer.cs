@@ -6,11 +6,11 @@ using System.Threading;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Diagnostics;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Providers;
-using System.Reflection;
 using Orleans.CodeGeneration;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker

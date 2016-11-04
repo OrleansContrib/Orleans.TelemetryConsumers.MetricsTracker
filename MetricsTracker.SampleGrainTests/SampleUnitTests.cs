@@ -25,12 +25,10 @@ namespace MetricsTracker.SampleGrainTests
             Cluster = new TestCluster(options);
             Cluster.Deploy();
 
+            var metricsConfig = MetricsConfiguration.CreateUnitTestConfig();
+
             ClusterMetricsGrain = Cluster.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
-            ClusterMetricsGrain.Configure(new MetricsConfiguration
-            {
-                SamplingInterval = TimeSpan.FromMilliseconds(1),
-                ConfigurationInterval = TimeSpan.FromDays(1)
-            }).Wait();
+            ClusterMetricsGrain.Configure(metricsConfig).Wait();
         }
 
         [TestMethod]
@@ -46,7 +44,7 @@ namespace MetricsTracker.SampleGrainTests
 
             await Task.Delay(500);
 
-            var snapshot = await ClusterMetricsGrain.GetClusterMetrics();
+            var snapshot = await ClusterMetricsGrain.GetNextClusterMetrics(TimeSpan.FromSeconds(10));
 
             var poofCount = snapshot.Metrics.ContainsKey("Poof") ? snapshot.Metrics["Poof"] : 0;
 
