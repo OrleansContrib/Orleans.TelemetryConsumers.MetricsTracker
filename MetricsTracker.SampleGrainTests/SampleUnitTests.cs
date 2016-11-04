@@ -43,9 +43,6 @@ namespace MetricsTracker.SampleGrainTests
             var fleeb = Cluster.GrainFactory.GetGrain<IFleebGrain>(Guid.NewGuid());
             await fleeb.Boop();
 
-            //var blood = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
-            //await blood.Poof(Guid.NewGuid());
-
             var snapshot = await ClusterMetricsGrain.GetNextClusterMetrics(
                 timeout: TimeSpan.FromSeconds(10));
 
