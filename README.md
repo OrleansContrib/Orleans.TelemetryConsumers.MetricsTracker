@@ -65,3 +65,9 @@ async Task OnNewMetricSnapshot(MetricsSnapshot snapshot, StreamSequenceToken tok
 
 You can find a working sample project here:
 https://github.com/OrleansContrib/Orleans.TelemetryConsumers.MetricsTracker/tree/master/MetricsTracker.TestHost
+
+## MetricsTracker for Orleans Unit Testing
+
+Some experiments are happening to enable MetricsTracker to provide the data you need to verify your unit tests for grain logic and grain interactions using Orleans TestCluster. We're hoping this will greatly simplify your Orleans unit tests, reduce your testing efforts for complex distributed compute scenarios, and make your automated testing work easy and fun.
+
+https://github.com/OrleansContrib/Orleans.TelemetryConsumers.MetricsTracker/tree/master/MetricsTracker.SampleGrainTests
