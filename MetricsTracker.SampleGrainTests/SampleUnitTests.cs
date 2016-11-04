@@ -31,28 +31,27 @@ namespace MetricsTracker.SampleGrainTests
             ClusterMetricsGrain.Configure(metricsConfig).Wait();
         }
 
-        [TestMethod]
-        public void TestOrleansClusterWithMetrics()
+        [ClassCleanup]
+        public static void ClassCleanup()
         {
-            TestOrleansClusterWithMetricsAsync().Wait();
+            Cluster.StopAllSilos();
         }
 
-        async Task TestOrleansClusterWithMetricsAsync()
+        [TestMethod]
+        public async Task TestOrleansClusterWithMetrics()
         {
             var fleeb = Cluster.GrainFactory.GetGrain<IFleebGrain>(Guid.NewGuid());
             await fleeb.Boop();
 
-            var blood = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
-            await blood.Poof(Guid.NewGuid());
+            //var blood = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
+            //await blood.Poof(Guid.NewGuid());
 
             var snapshot = await ClusterMetricsGrain.GetNextClusterMetrics(
                 timeout: TimeSpan.FromSeconds(10));
 
-            var poofCount = snapshot.Metrics.ContainsKey(Metrics.Poof) ? snapshot.Metrics["Poof"] : 0;
-
             Assert.IsNotNull(snapshot);
             Assert.IsTrue(snapshot.Metrics.ContainsKey("Poof"));
-            Assert.AreEqual(1, snapshot.Metrics["Poof"]);
+            Assert.AreEqual(7, snapshot.Metrics["Poof"]);
         }
     }
 }
