@@ -1,4 +1,5 @@
-﻿using Orleans;
+﻿using MetricsTracker.TestHost.Model;
+using Orleans;
 using Orleans.Runtime;
 using System;
 using System.Collections.Generic;
@@ -38,9 +39,9 @@ namespace MetricsTracker.TestDomain
             //if (rand.NextDouble() < 0.1)
             //    throw new ApplicationException("RandomException");
 
-            logger.IncrementMetric("Poof");
+            logger.IncrementMetric(Metrics.Poof);
 
-            logger.TrackMetric("RandomValue", rand.Next(1, 100));
+            logger.TrackMetric(Metrics.RandomValue, rand.Next(1, 100));
         }
     }
 }

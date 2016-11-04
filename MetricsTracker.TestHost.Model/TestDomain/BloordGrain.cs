@@ -17,7 +17,7 @@ namespace MetricsTracker.TestHost.Model
 
         public override Task OnActivateAsync()
         {
-            logger = GetLogger("BloordGrain");
+            logger = GetLogger(nameof(BloordGrain));
 
             rand = new Random();
 
@@ -38,9 +38,9 @@ namespace MetricsTracker.TestHost.Model
             //if (rand.NextDouble() < 0.1)
             //    throw new ApplicationException("RandomException");
 
-            logger.IncrementMetric("Poof");
+            logger.IncrementMetric(Metrics.Poof);
 
-            logger.TrackMetric("RandomValue", rand.Next(1, 100));
+            logger.TrackMetric(Metrics.RandomValue, rand.Next(1, 100));
         }
     }
 }

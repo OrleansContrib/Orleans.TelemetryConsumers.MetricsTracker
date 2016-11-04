@@ -11,5 +11,6 @@ namespace MetricsTracker.TestHost.Model
         public const string Poof = "Poof";
         public const string Boop = "Boop";
         public const string NothingToBoop = "NothingToBoop";
+        public const string RandomValue = "RandomValue";
     }
 }

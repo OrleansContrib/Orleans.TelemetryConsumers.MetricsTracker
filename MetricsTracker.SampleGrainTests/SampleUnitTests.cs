@@ -37,6 +37,8 @@ namespace MetricsTracker.SampleGrainTests
             Cluster.StopAllSilos();
         }
 
+        static double PoofMetric(MetricsSnapshot snapshot) => snapshot.Metrics[Metrics.Poof];
+
         [TestMethod]
         public async Task TestOrleansClusterWithMetrics()
         {
@@ -47,8 +49,8 @@ namespace MetricsTracker.SampleGrainTests
                 timeout: TimeSpan.FromSeconds(10));
 
             Assert.IsNotNull(snapshot);
-            Assert.IsTrue(snapshot.Metrics.ContainsKey("Poof"));
-            Assert.AreEqual(7, snapshot.Metrics["Poof"]);
+            Assert.IsTrue(snapshot.Metrics.ContainsKey(Metrics.Poof));
+            Assert.AreEqual(7, snapshot.Metrics[Metrics.Poof]);
         }
     }
 }
