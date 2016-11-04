@@ -42,7 +42,8 @@ namespace MetricsTracker.SampleGrainTests
             var blood = Cluster.GrainFactory.GetGrain<IBloordGrain>(Guid.NewGuid());
             await blood.Poof(Guid.NewGuid());
 
-            var snapshot = await ClusterMetricsGrain.GetNextClusterMetrics(TimeSpan.FromSeconds(10));
+            var snapshot = await ClusterMetricsGrain.GetNextClusterMetrics(
+                timeout: TimeSpan.FromSeconds(10));
 
             var poofCount = snapshot.Metrics.ContainsKey("Poof") ? snapshot.Metrics["Poof"] : 0;
 
