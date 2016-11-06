@@ -37,8 +37,6 @@ namespace MetricsTracker.SampleGrainTests
             Cluster.StopAllSilos();
         }
 
-        static double PoofMetric(MetricsSnapshot snapshot) => snapshot.Metrics[Metrics.Poof];
-
         [TestMethod]
         public async Task TestOrleansClusterWithMetrics()
         {
