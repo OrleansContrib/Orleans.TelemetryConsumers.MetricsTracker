@@ -14,10 +14,7 @@
     <copyright>Copyright 2016</copyright>
     <tags>Measurement Metrics Counters Telemetry APM Monitor</tags>
     <releaseNotes>
-      added IClusterMetricsGrain.GetNextMetricsSnapshot and its implementation, which waits until all of its silo snapshots have been replaced with new values before returning the results (or until it times out);
-      added MetricsConfiguration.CreateUnitTestConfig;
-      updated SampleUnitTests to call GetNextMetricsSnapshot;
-      added MetricsSnapshot.id to fingerprint each snapshot and detect when they've been updated
+      updated fields in MetricsSnapshot to properties to work around a serialization issue
     </releaseNotes>
   </metadata>
 </package>
