@@ -17,40 +17,40 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         /// Unique ID for this snapshot, used to differentiate between snapshots of the same silo
         /// or cluster.
         /// </summary>
-        public Guid id = Guid.NewGuid();
+        public Guid id { get; set; } = Guid.NewGuid();
 
         /// <summary>
         /// The date and time the snapshot was created. Used to determine when the data is stale
         /// or to detect silo failures and network partitions.
         /// </summary>
-        public DateTime SnapshotTime;
+        public DateTime SnapshotTime { get; set; }
 
         /// <summary>
         /// Where the snapshot was created: either named after the ClusterMetricsGrain type 
         /// or a unique Silo identity.
         /// </summary>
-        public string Source;
+        public string Source { get; set; }
 
         /// <summary>
         /// The number of silos represented in the snapshot. For silo snapshots: 1.
         /// For cluster aggregate snapshots, it depends on the number of silos.
         /// </summary>
-        public int SiloCount = 1;
+        public int SiloCount { get; set; } = 1;
 
         /// <summary>
         /// Counters for tracking events, exceptions, and grain method calls. Not populated yet.
         /// </summary>
-        public Dictionary<string, long> Counters;
+        public Dictionary<string, long> Counters { get; set; }
 
         /// <summary>
         /// Floating-point metrics tracking. Currently storing all the counters.
         /// </summary>
-        public Dictionary<string, double> Metrics;
+        public Dictionary<string, double> Metrics { get; set; }
 
         /// <summary>
         /// Waiting for IncrementTimeSpanMetric or similar to hook this up.
         /// </summary>
-        public Dictionary<string, TimeSpan> TimeSpanMetrics;
+        public Dictionary<string, TimeSpan> TimeSpanMetrics { get; set; }
 
         public MetricsSnapshot()
         {
