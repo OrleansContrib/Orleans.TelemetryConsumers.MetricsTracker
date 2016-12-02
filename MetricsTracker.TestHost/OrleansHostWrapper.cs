@@ -1,13 +1,10 @@
 using System;
 using System.Net;
-using System.Threading.Tasks;
-
+using System.IO;
 using Orleans.Runtime.Configuration;
 using Orleans.Runtime.Host;
 using System.Reflection;
-using System.IO;
-using Orleans.TelemetryConsumers.MetricsTracker;
-using System.Collections.Generic;
+using OrleansDashboard;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 {
@@ -48,8 +45,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 
                 //siloHost.Config.Defaults.DefaultTraceLevel = Runtime.Severity.Verbose3;
 
-                siloHost.Config.Globals
-                    .RegisterBootstrapProvider<OrleansDashboard.Dashboard>("OrleansDashboard");
+                siloHost.Config.Globals.RegisterDashboard();
+
+                //siloHost.Config.Globals
+                //    .RegisterBootstrapProvider<OrleansDashboard.Dashboard>("OrleansDashboard");
 
                 siloHost.Config.AddSimpleMessageStreamProvider("SimpleStreamProvider");
 

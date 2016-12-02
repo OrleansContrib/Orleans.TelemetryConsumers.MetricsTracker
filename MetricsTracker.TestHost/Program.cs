@@ -40,7 +40,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 
                 var config = ClientConfiguration.LocalhostSilo();
                 config.AddSimpleMessageStreamProvider("SimpleStreamProvider");
-                //config.DefaultTraceLevel = Runtime.Severity.Verbose;
                 GrainClient.Initialize(config);
 
                 // TODO: once the previous call returns, the silo is up and running.
