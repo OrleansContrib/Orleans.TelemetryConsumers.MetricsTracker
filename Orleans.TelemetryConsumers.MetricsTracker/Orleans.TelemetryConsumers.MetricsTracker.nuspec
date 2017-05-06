@@ -14,7 +14,7 @@
     <copyright>Copyright 2016</copyright>
     <tags>Measurement Metrics Counters Telemetry APM Monitor</tags>
     <releaseNotes>
-      updated fields in MetricsSnapshot to properties to work around a serialization issue
+      Added Serializable attribute to MetricsSnapshot to fix serialization error in remote clients.
     </releaseNotes>
   </metadata>
 </package>

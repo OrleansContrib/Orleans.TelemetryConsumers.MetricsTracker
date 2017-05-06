@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Orleans.TelemetryConsumers.MetricsTracker
 {
+    [Serializable]
     /// <summary>
     /// Records the current values for all of the counters and metrics being tracked,
     /// as well as origin (Source), time-of-creation (SnapShotTime) data, and the number of

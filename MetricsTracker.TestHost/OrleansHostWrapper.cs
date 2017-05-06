@@ -45,10 +45,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
 
                 //siloHost.Config.Defaults.DefaultTraceLevel = Runtime.Severity.Verbose3;
 
-                siloHost.Config.Globals.RegisterDashboard();
+                siloHost.Config.Globals.RegisterDashboard(8083);
 
-                //siloHost.Config.Globals
-                //    .RegisterBootstrapProvider<OrleansDashboard.Dashboard>("OrleansDashboard");
+                siloHost.Config.Globals
+                    .RegisterBootstrapProvider<OrleansDashboard.Dashboard>("OrleansDashboard");
 
                 siloHost.Config.AddSimpleMessageStreamProvider("SimpleStreamProvider");
 
