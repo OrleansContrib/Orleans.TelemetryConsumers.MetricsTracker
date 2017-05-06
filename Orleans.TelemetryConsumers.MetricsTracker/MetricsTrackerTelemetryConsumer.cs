@@ -21,6 +21,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         Logger logger;
 
         IProviderRuntime Runtime;
+        TaskScheduler TaskScheduler;
 
         IManagementGrain Management;
 
@@ -47,11 +48,12 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
         bool IsInvokeInterceptorSet = false;
 
-        public MetricsTrackerTelemetryConsumer(IProviderRuntime runtime)
+        public MetricsTrackerTelemetryConsumer(IProviderRuntime runtime, TaskScheduler taskScheduler)
         {
             try
             {
                 Runtime = runtime;
+                TaskScheduler = taskScheduler;
 
                 logger = Runtime.GetLogger(nameof(MetricsTrackerTelemetryConsumer));
 
@@ -74,7 +76,9 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 // start a message pump to give ourselves the right synchronization context
                 // from which we can communicate with grains via normal grain references
                 // TODO: don't start the pump until it's been requested
-                StartMessagePump().Ignore();
+                //StartMessagePump().Ignore();
+                //Task.Factory.StartNew(() => StartMessagePump(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler);
+                var dispatchTask = Dispatch(() => StartMessagePump());
 
                 Management = Runtime.GrainFactory.GetGrain<IManagementGrain>(0);
             }
@@ -83,6 +87,18 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 logger.TrackException(ex);
                 throw;
             }
+        }
+
+        //public async Task<TResult> Dispatch<TResult>(Func<Task<TResult>> taskCreator)
+        //{
+        //    var task = Task.Factory.StartNew(taskCreator, CancellationToken.None, TaskCreationOptions.None, TaskScheduler);
+        //    return await (await task.ConfigureAwait(false)).ConfigureAwait(false);
+        //}
+
+        public async Task Dispatch(Func<Task> taskCreator)
+        {
+            var task = Task.Factory.StartNew(taskCreator, CancellationToken.None, TaskCreationOptions.None, TaskScheduler);
+            await (await task.ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         private void ConfigureSiloInterceptor(bool enable = true)
@@ -129,10 +145,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 {
                     logger.IncrementMetric($"GrainInvokeTimeout:{grain.GetType().Name}:{method.Name}");
                     logger.TrackException(ex, new Dictionary<string, string>
-                            {
-                                {"GrainType", grain.GetType().Name},
-                                {"MethodName", method.Name},
-                            });
+                        {
+                            {"GrainType", grain.GetType().Name},
+                            {"MethodName", method.Name},
+                        });
                 }
                 throw;
             }
@@ -142,10 +158,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 {
                     logger.IncrementMetric($"GrainException:{grain.GetType().Name}:{method.Name}");
                     logger.TrackException(ex, new Dictionary<string, string>
-                            {
-                                {"GrainType", grain.GetType().Name},
-                                {"MethodName", method.Name},
-                            });
+                        {
+                            {"GrainType", grain.GetType().Name},
+                            {"MethodName", method.Name},
+                        });
                 }
                 throw;
             }
@@ -483,21 +499,6 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
                 //throw;
             }
         }
-
-
-
-        //async Task Experiment()
-        //{
-        //    try
-        //    {
-        //        var metricsGrain = Runtime.GrainFactory.GetGrain<IClusterMetricsGrain>(Guid.Empty);
-        //        await metricsGrain.ReportSiloStatistics(new MetricsSnapshot());
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        logger.TrackException(ex);
-        //    }
-        //}
 
         public void TrackDependency(string dependencyName, string commandName, DateTimeOffset startTime, TimeSpan duration, bool success)
         {

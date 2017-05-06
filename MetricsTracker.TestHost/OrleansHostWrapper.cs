@@ -60,11 +60,10 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
                     .RegisterBootstrapProvider<MetricsTrackerBootstrapProvider>("MetricsTracker");
 
                 ok = siloHost.StartOrleansSilo();
-
-                if (ok)
-                    Console.WriteLine(string.Format("Successfully started Orleans silo '{0}' as a {1} node.", siloHost.Name, siloHost.Type));
-                else
+                if (!ok)
                     throw new SystemException(string.Format("Failed to start Orleans silo '{0}' as a {1} node.", siloHost.Name, siloHost.Type));
+
+                Console.WriteLine(string.Format("Successfully started Orleans silo '{0}' as a {1} node.", siloHost.Name, siloHost.Type));
             }
             catch (Exception exc)
             {

@@ -25,7 +25,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
 
             logger = Runtime.GetLogger(nameof(MetricsTracker));
 
-            var telemetryConsumer = new MetricsTrackerTelemetryConsumer(providerRuntime);
+            var telemetryConsumer = new MetricsTrackerTelemetryConsumer(providerRuntime, TaskScheduler.Current);
             LogManager.TelemetryConsumers.Add(telemetryConsumer);
 
             return TaskDone.Done;
