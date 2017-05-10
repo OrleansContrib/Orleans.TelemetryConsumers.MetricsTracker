@@ -124,8 +124,8 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         {
             try
             {
-                if (PreviousInterceptor != null)
-                    await PreviousInterceptor(method, request, grain, invoker);
+                //if (PreviousInterceptor != null)
+                //    await PreviousInterceptor(method, request, grain, invoker);
 
                 // Invoke the request and return the result back to the caller.
                 var result = await invoker.Invoke(grain, request);

@@ -14,7 +14,7 @@
     <copyright>Copyright 2016</copyright>
     <tags>Measurement Metrics Counters Telemetry APM Monitor</tags>
     <releaseNotes>
-      Added Serializable attribute to MetricsSnapshot to fix serialization error in remote clients.
+      Removed call to previous interceptor to prevent duplicate grain method invocations.
     </releaseNotes>
   </metadata>
 </package>
