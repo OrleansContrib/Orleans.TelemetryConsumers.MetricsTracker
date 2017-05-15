@@ -14,7 +14,9 @@
     <copyright>Copyright 2016</copyright>
     <tags>Measurement Metrics Counters Telemetry APM Monitor</tags>
     <releaseNotes>
-      Removed call to previous interceptor to prevent duplicate grain method invocations.
+      Another attempt to fix silo interceptor logic. New approach: if a previous interceptor exists, call it; otherwise invoke the grain method call; assume previous interceptor
+      (or the interceptor at the bottom of the stack) eventually invokes the desired grain method.
+      Added new MetricsConfiguration bool field "LogExceptions", which requires a silo interceptor, and uses the Orleans.Runtime.Logger to log exception details (disabled by default).
     </releaseNotes>
   </metadata>
 </package>

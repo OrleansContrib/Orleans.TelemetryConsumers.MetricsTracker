@@ -124,11 +124,15 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         {
             try
             {
-                //if (PreviousInterceptor != null)
-                //    await PreviousInterceptor(method, request, grain, invoker);
+                object result = PreviousInterceptor != null
+                    ? await PreviousInterceptor(method, request, grain, invoker)
+                    : await invoker.Invoke(grain, request);
 
-                // Invoke the request and return the result back to the caller.
-                var result = await invoker.Invoke(grain, request);
+                //if (PreviousInterceptor != null)
+                //    result = await PreviousInterceptor(method, request, grain, invoker);
+
+                //// Invoke the request and return the result back to the caller.
+                //var result = await invoker.Invoke(grain, request);
 
                 if (Configuration.TrackMethodGrainCalls)
                 {
@@ -142,27 +146,29 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
             catch (TimeoutException ex) // Not sure if this is going to be an innerException here or if everything gets unrolled... Fingers crossed for now!
             {
                 if (Configuration.TrackExceptionCounters)
-                {
                     logger.IncrementMetric($"GrainInvokeTimeout:{grain.GetType().Name}:{method.Name}");
+
+                if (Configuration.LogExceptions)
                     logger.TrackException(ex, new Dictionary<string, string>
                         {
-                            {"GrainType", grain.GetType().Name},
-                            {"MethodName", method.Name},
+                            { "GrainType", grain.GetType().Name },
+                            { "MethodName", method.Name },
                         });
-                }
+
                 throw;
             }
             catch (Exception ex)
             {
                 if (Configuration.TrackExceptionCounters)
-                {
                     logger.IncrementMetric($"GrainException:{grain.GetType().Name}:{method.Name}");
+
+                if (Configuration.LogExceptions)
                     logger.TrackException(ex, new Dictionary<string, string>
                         {
-                            {"GrainType", grain.GetType().Name},
-                            {"MethodName", method.Name},
+                            { "GrainType", grain.GetType().Name },
+                            { "MethodName", method.Name },
                         });
-                }
+
                 throw;
             }
         }

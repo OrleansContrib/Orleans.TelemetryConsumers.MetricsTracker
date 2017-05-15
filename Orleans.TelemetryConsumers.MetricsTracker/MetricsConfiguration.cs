@@ -34,20 +34,26 @@ namespace Orleans.TelemetryConsumers.MetricsTracker
         public TimeSpan StaleSiloMetricsDuration = TimeSpan.FromSeconds(10);
 
         /// <summary>
+        /// Use the Orleans.Runtime.Logger to log exception details. Requires a SiloInterceptor.
+        /// </summary>
+        public bool LogExceptions = false;
+
+        /// <summary>
         /// Track total exceptions reported, total number of unique exceptions reported,
-        /// and a counter for each Exception type name.
+        /// and a counter for each Exception type name. Requires a SiloInterceptor.
         /// </summary>
         public bool TrackExceptionCounters = false;
 
         /// <summary>
         /// Track all grain method calls, creating an invocation counter for each method.
+        /// Requires a SiloInterceptor.
         /// </summary>
         public bool TrackMethodGrainCalls = false;
 
         /// <summary>
         /// Returns true if either TrackExceptionCounters or TrackMethodGrainCalls are true.
         /// </summary>
-        public bool NeedSiloInterceptor => TrackExceptionCounters || TrackMethodGrainCalls;
+        public bool NeedSiloInterceptor => TrackExceptionCounters || TrackMethodGrainCalls || LogExceptions;
 
         /// <summary>
         /// The number of historical samples to keep for all counters and metrics.

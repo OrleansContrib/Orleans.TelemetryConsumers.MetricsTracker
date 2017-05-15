@@ -55,6 +55,7 @@ namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
                     SamplingInterval = TimeSpan.FromSeconds(1), // default
                     ConfigurationInterval = TimeSpan.FromSeconds(10), // default
                     StaleSiloMetricsDuration = TimeSpan.FromSeconds(10), // default
+                    LogExceptions = true,
                     TrackExceptionCounters = true,
                     TrackMethodGrainCalls = true,
                     StreamingProviderName = "SimpleStreamProvider",
