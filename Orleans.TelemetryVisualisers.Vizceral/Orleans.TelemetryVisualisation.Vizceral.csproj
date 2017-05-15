@@ -359,9 +359,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Orleans.TelemetryConsumers.MetricsTracker\Orleans.TelemetryConsumers.MetricsTracker.csproj">
+    <ProjectReference Include="..\Orleans.MetricsTracker\Orleans.MetricsTracker.csproj">
       <Project>{a3cc413e-e076-4f69-8d8a-93a4dee16566}</Project>
-      <Name>Orleans.TelemetryConsumers.MetricsTracker</Name>
+      <Name>Orleans.MetricsTracker</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -224,9 +224,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Orleans.TelemetryConsumers.MetricsTracker\Orleans.TelemetryConsumers.MetricsTracker.csproj">
+    <ProjectReference Include="..\Orleans.MetricsTracker\Orleans.MetricsTracker.csproj">
       <Project>{A3CC413E-E076-4F69-8D8A-93A4DEE16566}</Project>
-      <Name>Orleans.TelemetryConsumers.MetricsTracker</Name>
+      <Name>Orleans.MetricsTracker</Name>
     </ProjectReference>
     <ProjectReference Include="..\MetricsTracker.TestHost.Model\MetricsTracker.TestHost.Model.csproj">
       <Project>{e748911a-98a6-4a4c-a042-9082ab9968e4}</Project>

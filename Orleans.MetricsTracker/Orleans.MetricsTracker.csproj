@@ -7,7 +7,7 @@
     <ProjectGuid>{A3CC413E-E076-4F69-8D8A-93A4DEE16566}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Orleans.TelemetryConsumers.MetricsTracker</RootNamespace>
+    <RootNamespace>Orleans.MetricsTracker</RootNamespace>
     <AssemblyName>Orleans.TelemetryConsumers.MetricsTracker</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -153,7 +153,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="BuildNuget.bat" />
-    <None Include="Orleans.TelemetryConsumers.MetricsTracker.nuspec" />
+    <None Include="Orleans.MetricsTracker.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricsTracker.TestHost", "MetricsTracker.TestHost\MetricsTracker.TestHost.csproj", "{E6A446E4-CA56-4F41-8C43-0EF89D9D2310}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.TelemetryConsumers.MetricsTracker", "Orleans.TelemetryConsumers.MetricsTracker\Orleans.TelemetryConsumers.MetricsTracker.csproj", "{A3CC413E-E076-4F69-8D8A-93A4DEE16566}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.MetricsTracker", "Orleans.MetricsTracker\Orleans.MetricsTracker.csproj", "{A3CC413E-E076-4F69-8D8A-93A4DEE16566}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.TelemetryVisualisation.Vizceral", "Orleans.TelemetryVisualisers.Vizceral\Orleans.TelemetryVisualisation.Vizceral.csproj", "{C503BF67-5A6E-4548-9241-330B167E98F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.TelemetryVisualisers.Vizceral", "Orleans.TelemetryVisualisers.Vizceral\Orleans.TelemetryVisualisation.Vizceral.csproj", "{C503BF67-5A6E-4548-9241-330B167E98F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricsTracker.SampleGrainTests", "MetricsTracker.SampleGrainTests\MetricsTracker.SampleGrainTests.csproj", "{F1A89BCE-C7FE-411B-A946-33F3FA8D9D8A}"
 EndProject

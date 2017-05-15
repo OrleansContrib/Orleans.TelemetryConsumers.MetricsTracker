@@ -14,9 +14,15 @@
     <copyright>Copyright 2016</copyright>
     <tags>Measurement Metrics Counters Telemetry APM Monitor</tags>
     <releaseNotes>
-      Another attempt to fix silo interceptor logic. New approach: if a previous interceptor exists, call it; otherwise invoke the grain method call; assume previous interceptor
-      (or the interceptor at the bottom of the stack) eventually invokes the desired grain method.
-      Added new MetricsConfiguration bool field "LogExceptions", which requires a silo interceptor, and uses the Orleans.Runtime.Logger to log exception details (disabled by default).
+      Welcome to version 1.0.0 - the first non-beta version Orleans.MetricsTracker! This used to be called,
+      and previous versions can be found at the NuGet.org page for, Orleans.TelemetryConsumers.MetricsTracker:
+      https://www.nuget.org/packages/Orleans.TelemetryConsumers.MetricsTracker
+
+      This version has been tested to work better with other Orleans plugins (such as OrleansDashboard) which also register silo interceptors,
+      and is now using the proper synchronization context for calling into grains from telemetry consumers.
+
+      Still, despite all the recent work to debug and stabilize this metrics tool, if you do find any bugs please report them to:
+      https://github.com/OrleansContrib/Orleans.TelemetryConsumers.MetricsTracker/issues
     </releaseNotes>
   </metadata>
 </package>
