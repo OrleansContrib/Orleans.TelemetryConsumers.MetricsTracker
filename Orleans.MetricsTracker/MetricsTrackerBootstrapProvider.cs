@@ -7,7 +7,7 @@ using Orleans;
 using Orleans.Runtime;
 using Orleans.Providers;
 
-namespace Orleans.TelemetryConsumers.MetricsTracker
+namespace Orleans.MetricsTracker
 {
     public class MetricsTrackerBootstrapProvider : IBootstrapProvider
     {

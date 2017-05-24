@@ -6,7 +6,7 @@ using Orleans.Streams;
 using Orleans.Runtime.Configuration;
 using MetricsTracker.TestDomain;
 
-namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
+namespace Orleans.MetricsTracker.TestHost
 {
     public class Program
     {

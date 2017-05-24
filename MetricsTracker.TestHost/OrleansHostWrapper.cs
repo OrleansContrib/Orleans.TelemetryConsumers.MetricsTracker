@@ -6,7 +6,7 @@ using Orleans.Runtime.Host;
 using System.Reflection;
 using OrleansDashboard;
 
-namespace Orleans.TelemetryConsumers.MetricsTracker.TestHost
+namespace Orleans.MetricsTracker.TestHost
 {
     internal class OrleansHostWrapper : IDisposable
     {

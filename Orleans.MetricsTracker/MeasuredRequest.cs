@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Orleans.TelemetryConsumers.MetricsTracker
+namespace Orleans.MetricsTracker
 {
     public class MeasuredRequest
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Orleans.TelemetryConsumers.MetricsTracker
+namespace Orleans.MetricsTracker
 {
     public interface IClusterMetricsGrain : IGrainWithGuidKey
     {

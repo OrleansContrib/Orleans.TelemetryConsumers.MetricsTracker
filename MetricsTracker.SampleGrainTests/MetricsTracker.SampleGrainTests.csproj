@@ -68,10 +68,6 @@
     <Reference Include="Orleans, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Orleans.Core.1.4.1\lib\net451\Orleans.dll</HintPath>
     </Reference>
-    <Reference Include="Orleans.TelemetryConsumers.MetricsTracker, Version=0.9.12.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Orleans.TelemetryConsumers.MetricsTracker.0.9.12-beta\lib\net461\Orleans.TelemetryConsumers.MetricsTracker.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="OrleansProviders, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Orleans.OrleansProviders.1.4.1\lib\net451\OrleansProviders.dll</HintPath>
     </Reference>
@@ -192,6 +188,10 @@
     <ProjectReference Include="..\MetricsTracker.TestHost.Model\MetricsTracker.TestHost.Model.csproj">
       <Project>{e748911a-98a6-4a4c-a042-9082ab9968e4}</Project>
       <Name>MetricsTracker.TestHost.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orleans.MetricsTracker\Orleans.MetricsTracker.csproj">
+      <Project>{a3cc413e-e076-4f69-8d8a-93a4dee16566}</Project>
+      <Name>Orleans.MetricsTracker</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

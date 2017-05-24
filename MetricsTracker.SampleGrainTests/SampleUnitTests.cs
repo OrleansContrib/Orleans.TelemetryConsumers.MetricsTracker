@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Orleans.TestingHost;
-using Orleans.TelemetryConsumers.MetricsTracker;
+using Orleans.MetricsTracker;
 using MetricsTracker.TestHost.Model;
 
 namespace MetricsTracker.SampleGrainTests

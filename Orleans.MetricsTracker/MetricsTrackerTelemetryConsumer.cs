@@ -13,7 +13,7 @@ using Orleans.Runtime;
 using Orleans.Providers;
 using Orleans.CodeGeneration;
 
-namespace Orleans.TelemetryConsumers.MetricsTracker
+namespace Orleans.MetricsTracker
 {
     public class MetricsTrackerTelemetryConsumer : IEventTelemetryConsumer, IExceptionTelemetryConsumer,
         IDependencyTelemetryConsumer, IMetricTelemetryConsumer, IRequestTelemetryConsumer

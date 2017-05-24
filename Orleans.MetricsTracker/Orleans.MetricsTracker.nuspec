@@ -6,23 +6,23 @@
     <title>$title$</title>
     <authors>Dan Vanderboom</authors>
     <owners>Dan Vanderboom</owners>
-    <licenseUrl>https://github.com/OrleansContrib/Orleans.TelemetryConsumers.MetricsTracker/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/OrleansContrib/Orleans.TelemetryConsumers.MetricsTracker</projectUrl>
+    <licenseUrl>https://github.com/OrleansContrib/Orleans.MetricsTracker/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/OrleansContrib/Orleans.MetricsTracker</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>An extension for Orleans which intercepts all telemetry calls, calculates and tracks the metrics on each silo, and aggregates all of the silo metrics into a ClusterMetricsGrain. The metrics stored in this grain can be accessed from any grain or Orleans client.</description>
+    <description>An extension for Orleans which intercepts all telemetry calls, calculates and tracks the metrics on each silo, and aggregates all of the silo metrics into a ClusterMetricsGrain. The metrics stored in this grain can be accessed from any grain or Orleans client by subscribing to individual silo or aggregated cluster metrics snapshots.</description>
     <copyright>Copyright 2016</copyright>
     <tags>Measurement Metrics Counters Telemetry APM Monitor</tags>
     <releaseNotes>
-      Welcome to version 1.0.0 - the first non-beta version Orleans.MetricsTracker! This used to be called,
-      and previous versions can be found at the NuGet.org page for, Orleans.TelemetryConsumers.MetricsTracker:
-      https://www.nuget.org/packages/Orleans.TelemetryConsumers.MetricsTracker
+      Welcome to version 1.1.0 - the first non-beta version Orleans.MetricsTracker!
 
       This version has been tested to work better with other Orleans plugins (such as OrleansDashboard) which also register silo interceptors,
       and is now using the proper synchronization context for calling into grains from telemetry consumers.
 
       Still, despite all the recent work to debug and stabilize this metrics tool, if you do find any bugs please report them to:
-      https://github.com/OrleansContrib/Orleans.TelemetryConsumers.MetricsTracker/issues
+      https://github.com/OrleansContrib/Orleans.MetricsTracker/issues
+
+	  Breaking change: the namespace Orleans.MetricsTracker has been renamed to the shorter Orleans.MetricsTracker. This will not change again for a long time (if ever).
     </releaseNotes>
   </metadata>
 </package>

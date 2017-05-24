@@ -10,14 +10,14 @@ using System.Web.Routing;
 using Microsoft.AspNet.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Owin;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Runtime.Configuration;
 using Orleans.Streams;
-using Orleans.TelemetryConsumers.MetricsTracker;
+using Orleans.MetricsTracker;
 using Orleans.TelemetryVisualisation.Vizceral.Hubs;
 using Orleans.TelemetryVisualisation.Vizceral.Models;
-using Owin;
 
 namespace Orleans.TelemetryVisualisation.Vizceral
 {
@@ -28,7 +28,6 @@ namespace Orleans.TelemetryVisualisation.Vizceral
         private IHubContext _metricsHub;
         private const string MetricsStreamProvider = "SimpleStreamProvider";
         private Dictionary<string, MetricsSnapshot> _snapshotHistoryCache;
-        
 
         public void Configuration(IAppBuilder app)
         {

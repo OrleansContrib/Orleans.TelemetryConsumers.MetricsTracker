@@ -7,7 +7,7 @@ using Orleans.Streams;
 using Orleans.Runtime;
 using Orleans.Concurrency;
 
-namespace Orleans.TelemetryConsumers.MetricsTracker
+namespace Orleans.MetricsTracker
 {
     [Reentrant]
     public class ClusterMetricsGrain : Grain, IClusterMetricsGrain
